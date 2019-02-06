@@ -68,8 +68,7 @@ RUN curl -o fftw.tar.gz http://www.fftw.org/fftw-${FFTW_VERSION}.tar.gz \
   && tar -xzvf fftw.tar.gz && cd fftw-${FFTW_VERSION} \
   && ./configure --disable-double --enable-float --enable-sse2 --enable-avx --enable-avx2 --enable-avx512 --enable-shared --disable-static \
   && make -j ${JOBS} \
-  && make install \
-  && rm fftw.tar.gz fftw.tar.gz.md5
+  && make install
 
 # build GROMACS and run unit tests
 # To cater to different architectures, we build for all of them
