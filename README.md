@@ -1,6 +1,6 @@
 # Docker files for GROMACS
 
-This repository hosts [Docker](https://www.docker.com/) recipes for GROMACS.
+This repository hosts [Docker](https://www.docker.com/) recipes for [GROMACS](http://manual.gromacs.org/documentation/).
 
 Build with [nvidia-docker](https://github.com/NVIDIA/nvidia-docker)
 
@@ -8,8 +8,7 @@ Build with [nvidia-docker](https://github.com/NVIDIA/nvidia-docker)
 ## Building
 
 ```shell
-docker build -t jena jena
-docker build -t jena-fuseki jena-fuseki
+nvidia-docker build -t gromacs .
 ```
  
 ## License
