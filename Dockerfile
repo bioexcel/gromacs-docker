@@ -50,28 +50,26 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/*
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib/openmpi/lib
 
-# Download source
+# Download sources
 RUN mkdir -p /gromacs /gromacs-src
-WORKDIR /tmp
+WORKDIR /gromacs-src
 RUN curl -o gromacs.tar.gz http://ftp.gromacs.org/pub/gromacs/gromacs-${GROMACS_VERSION}.tar.gz &&\ 
     echo "${GROMACS_MD5}  gromacs.tar.gz" > gromacs.tar.gz.md5 &&\
     md5sum -c gromacs.tar.gz.md5 &&\
-    cd /gromacs-src && tar zxf /tmp/gromacs.tar.gz &&\
-    rm /tmp/gromacs.tar.gz /tmp/gromacs.tar.gz.md5
-WORKDIR /gromacs-src
-#COPY gromacs /gromacs-src
+    tar zxf gromacs.tar.gz &&\
+    mv gromacs-${GROMACS_VERSION}/* .
 
-
-# Install fftw-3.3.8 with more optimizations than the default packages
+# Install fftw with more optimizations than the default packages
 # It is not critical to run the tests here, since our experience is that the
 # Gromacs unit tests will catch fftw build errors too.
 RUN curl -o fftw.tar.gz http://www.fftw.org/fftw-${FFTW_VERSION}.tar.gz \
   && echo "${FFTW_MD5}  fftw.tar.gz" > fftw.tar.gz.md5 \
   && md5sum -c fftw.tar.gz.md5 \
-  && tar -xzvf fftw.tar.gz && cd fftw-* \
+  && tar -xzvf fftw.tar.gz && cd fftw-${FFTW_VERSION} \
   && ./configure --disable-double --enable-float --enable-sse2 --enable-avx --enable-avx2 --enable-avx512 --enable-shared --disable-static \
   && make -j ${JOBS} \
-  && make install
+  && make install \
+  && rm fftw.tar.gz fftw.tar.gz.md5
 
 # build GROMACS and run unit tests
 # To cater to different architectures, we build for all of them
