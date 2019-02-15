@@ -95,8 +95,8 @@ RUN for ARCH in SSE2 AVX_256 AVX2_256 AVX_512; do \
 
 # Run tests (optional)
 # We avoid running tests for AVX_512, since that hardware might not be available
-RUN for ARCH in SSE2 AVX_256 AVX2_256; do \
-    cd /gromacs-build.${ARCH} && make -j ${JOBS} check; done
+#RUN for ARCH in SSE2 AVX_256 AVX2_256; do \
+#    cd /gromacs-build.${ARCH} && make -j ${JOBS} check; done
 
 #
 # Build the program to identify number of AVX512 FMA units
