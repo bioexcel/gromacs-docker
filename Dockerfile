@@ -113,19 +113,9 @@ RUN cd /gromacs-build.AVX_512 \
     /gromacs-src/src/gromacs/hardware/identifyavx512fmaunits.cpp
 
 # 
-# Create the architecture-detection script
-RUN mkdir -p /gromacs/bin && echo '#!/bin/sh\n\
-FLAGS=`cat /proc/cpuinfo | grep ^flags | head -1`\n\
-if echo $FLAGS | grep " avx512f " > /dev/null && test -d /gromacs/bin.AVX_512 && echo `/gromacs/bin.AVX_512/identifyavx512fmaunits` | grep "2" > /dev/null; then\n\
-    ARCH="AVX_512"\n\
-elif echo $FLAGS | grep " avx2 " > /dev/null && test -d /gromacs/bin.AVX2_256; then\n\
-    ARCH="AVX2_256"\n\
-elif echo $FLAGS | grep " avx " > /dev/null && test -d /gromacs/bin.AVX_256; then\n\
-    ARCH="AVX_256"\n\
-else\n\
-    ARCH="SSE2"\n\
-fi\n\
-/gromacs/bin.${ARCH}/gmx $@\n' > /gromacs/bin/gmx && chmod +x /gromacs/bin/gmx
+# Add architecture-detection script
+COPY gmx-chooser /gromacs/bin/gmx
+RUN chmod +x /gromacs/bin/gmx
 
 ###############################################################################
 # Final stage
