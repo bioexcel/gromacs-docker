@@ -34,7 +34,7 @@ ARG FFTW_VERSION=3.3.8
 ARG FFTW_MD5=8aac833c943d8e90d51b697b27d4384d
 
 # number of make jobs during compile
-ARG JOBS=16
+ARG JOBS=4
 
 
 
