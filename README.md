@@ -4,6 +4,7 @@
 [![bioexcel/gromacs](https://images.microbadger.com/badges/image/gromacs/gromacs.svg)](https://microbadger.com/images/gromacs/gromacs)
 [![NVIDIA CUDA optimized](https://img.shields.io/badge/CUDA-optimized-76B900.svg?logo=nvidia)](https://www.nvidia.com/en-gb/data-center/gpu-accelerated-applications/gromacs/)
 [![GNU GPL 2.1+](https://img.shields.io/badge/license-LGPL2.1+-A42E2B.svg?logo=gnu)](https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html)
+[![Docker image releases](https://img.shields.io/github/release/bioexcel/gromacs-docker.svg)](https://github.com/bioexcel/gromacs-docker/releases)
 
 
 [GROMACS](http://www.gromacs.org/) is a versatile package to perform molecular dynamics, i.e. simulate the Newtonian equations of motion for systems with hundreds to millions of particles.
