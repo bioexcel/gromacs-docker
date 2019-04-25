@@ -85,7 +85,6 @@ RUN for ARCH in SSE2 AVX_256 AVX2_256 AVX_512; do \
     -DCUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda \
     -DCMAKE_INSTALL_PREFIX=/gromacs \
     -DREGRESSIONTEST_DOWNLOAD=ON \
-    -DGMX_USE_NVML=OFF \
 #    -DMPIEXEC_PREFLAGS=--allow-run-as-root \
     -DGMX_SIMD=${ARCH} \
     -DCMAKE_INSTALL_BINDIR=bin.${ARCH} \
