@@ -27,8 +27,8 @@
 FROM nvidia/cuda:9.0-devel-ubuntu16.04 as builder
 
 # Update according to http://manual.gromacs.org/documentation/
-ARG GROMACS_VERSION=2019.1
-ARG GROMACS_MD5=dccfadda6a7d4ab80fcb4059606a4ef3
+ARG GROMACS_VERSION=2019.4
+ARG GROMACS_MD5=b424b9099f8bb00e1cd716a1295d797e
 
 ARG FFTW_VERSION=3.3.8
 ARG FFTW_MD5=8aac833c943d8e90d51b697b27d4384d
