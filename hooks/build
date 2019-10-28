@@ -1,1 +1,3 @@
+#!/usr/bin/env bash
+
 docker build --build-arg GROMACS_ARCH=$GROMACS_ARCH -f $DOCKERFILE_PATH -t $IMAGE_NAME .
