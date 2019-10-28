@@ -27,15 +27,18 @@
 FROM nvidia/cuda:9.0-devel-ubuntu16.04 as builder
 
 # Update according to http://manual.gromacs.org/documentation/
-ARG GROMACS_VERSION=2019.1
-ARG GROMACS_MD5=dccfadda6a7d4ab80fcb4059606a4ef3
+ARG GROMACS_VERSION=2019.4
+ARG GROMACS_MD5=b424b9099f8bb00e1cd716a1295d797e
 
 ARG FFTW_VERSION=3.3.8
 ARG FFTW_MD5=8aac833c943d8e90d51b697b27d4384d
 
 # number of make jobs during compile
-ARG JOBS=4
+ARG JOBS=16
 
+
+# default loop value
+ARG GROMACS_ARCH='SSE2 AVX_256 AVX2_256 AVX_512'
 
 
 # install required packages
@@ -76,7 +79,7 @@ RUN curl -o fftw.tar.gz http://www.fftw.org/fftw-${FFTW_VERSION}.tar.gz \
 
 # You can change the architecture list here to add more SIMD types,
 # but make sure to always include SSE2 as a fall-back.
-RUN for ARCH in SSE2 AVX_256 AVX2_256 AVX_512; do \
+RUN for ARCH in ${GROMACS_ARCH}; do \
      mkdir -p /gromacs-build.${ARCH} && cd /gromacs-build.${ARCH} \
   && CC=gcc CXX=g++ cmake /gromacs-src \
     -DGMX_OPENMP=ON \
@@ -103,13 +106,15 @@ RUN for ARCH in SSE2 AVX_256 AVX2_256 AVX_512; do \
 # are dual AVX-512 FMA units, it will be faster to use AVX-512 SIMD, but if
 # there's only a single one we prefer AVX2_256 SIMD instead.
 #
-RUN cd /gromacs-build.AVX_512 \
+RUN if [ -d "/gromacs-build.AVX_512" ]; \
+    then cd /gromacs-build.AVX_512 \
   && g++ -O3 -mavx512f -std=c++11 \
     -DGMX_IDENTIFY_AVX512_FMA_UNITS_STANDALONE=1 \
     -DGMX_X86_GCC_INLINE_ASM=1 \
     -DSIMD_AVX_512_CXX_SUPPORTED=1 \
     -o /gromacs/bin.AVX_512/identifyavx512fmaunits \
-    /gromacs-src/src/gromacs/hardware/identifyavx512fmaunits.cpp
+    /gromacs-src/src/gromacs/hardware/identifyavx512fmaunits.cpp; \
+    fi;
 
 # 
 # Add architecture-detection script
