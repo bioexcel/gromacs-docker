@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+curl -X POST $GROMACS_NEXT_BUILD
