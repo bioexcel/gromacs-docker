@@ -1,3 +1,2 @@
 #!/usr/bin/env bash
-
-curl -X POST $GROMACS_NEXT_BUILD
+if [ -z $GROMACS_NEXT_BUILD ]; then echo "Not set"; else curl -X POST $GROMACS_NEXT_BUILD; fi;
