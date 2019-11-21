@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
 if [ "$GROMACS_ARCH" = "final" ];
 then
+    echo `pwd`
+    echo `ls`
+    echo `$DOCKERFILE_PATH`
     cd $DOCKERFILE_PATH
-    mv -f $DOCKERFILE_PATH/final $DOCKERFILE_PATH/Dockerfile
+    mv -f final $DOCKERFILE_PATH
     cd
     docker build --build-arg GROMACS_ARCH=$GROMACS_ARCH -f $DOCKERFILE_PATH -t $IMAGE_NAME .;
 else docker build --build-arg GROMACS_ARCH=$GROMACS_ARCH -f $DOCKERFILE_PATH -t $IMAGE_NAME .;
