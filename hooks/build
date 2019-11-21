@@ -2,7 +2,7 @@
 if [ "$GROMACS_ARCH" = "final" ];
 then
     cd $DOCKERFILE_PATH
-    mv -f final Dockerfile
+    mv -f $DOCKERFILE_PATH/final $DOCKERFILE_PATH/Dockerfile
     cd
     docker build --build-arg GROMACS_ARCH=$GROMACS_ARCH -f $DOCKERFILE_PATH -t $IMAGE_NAME .;
 else docker build --build-arg GROMACS_ARCH=$GROMACS_ARCH -f $DOCKERFILE_PATH -t $IMAGE_NAME .;
