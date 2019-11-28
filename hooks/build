@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
 if [ "$GROMACS_ARCH" = "final" ];
 then
+    echo 'rel'
     echo `pwd`
+    echo 'rel'
     echo `ls`
-    echo `$DOCKERFILE_PATH`
+    echo 'rel'
+    echo $DOCKERFILE_PATH
     cd $DOCKERFILE_PATH
     mv -f final $DOCKERFILE_PATH
     cd
