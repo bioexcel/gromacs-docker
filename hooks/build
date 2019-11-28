@@ -6,10 +6,10 @@ then
     echo 'rel'
     echo `ls`
     echo 'rel'
-    echo $DOCKERFILE_PATH
-    cd $DOCKERFILE_PATH
-    mv -f final $DOCKERFILE_PATH
-    cd
+    #echo $DOCKERFILE_PATH
+    #cd $DOCKERFILE_PATH
+    mv -f final Dockerfile
+    echo `ls`
     docker build --build-arg GROMACS_ARCH=$GROMACS_ARCH -f $DOCKERFILE_PATH -t $IMAGE_NAME .;
 else docker build --build-arg GROMACS_ARCH=$GROMACS_ARCH -f $DOCKERFILE_PATH -t $IMAGE_NAME .;
 fi;
