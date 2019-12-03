@@ -39,6 +39,18 @@ ARG GROMACS_ARCH='SSE2 AVX_256 AVX2_256 AVX_512'
 ###############################################################################
 # Final stage
 ###############################################################################
+FROM nvidia/cuda:9.0-devel-ubuntu16.04 as builder
+
+# Update according to http://manual.gromacs.org/documentation/
+ARG GROMACS_VERSION=2019.4
+ARG GROMACS_MD5=b424b9099f8bb00e1cd716a1295d797e
+
+ARG FFTW_VERSION=3.3.8
+ARG FFTW_MD5=8aac833c943d8e90d51b697b27d4384d
+
+# number of make jobs during compile
+ARG JOBS=16
+
 FROM nvidia/cuda:9.0-runtime-ubuntu16.04
 
 # install required packages
