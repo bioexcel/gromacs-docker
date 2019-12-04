@@ -65,6 +65,7 @@ RUN apt-get update \
 
 # copy fftw libraries
 RUN bash -c /bin/echo 'COPY FFTW'
+
 COPY --from=builder /usr/local/lib /usr/local/lib
 
 RUN bash -c /bin/echo 'AVX-512'
