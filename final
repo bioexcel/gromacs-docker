@@ -80,7 +80,7 @@ COPY --from=longr/test-gromacs-avx2-256 /gromacs /gromacs
 
 RUN bash -c /bin/echo 'COPY GROMACS INSTALL'
 # copy gromacs install
-COPY --from=builder /gromacs /gromacs
+#COPY --from=builder /gromacs /gromacs
 ENV PATH=$PATH:/gromacs/bin
 
 # setup labels
