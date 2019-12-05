@@ -64,16 +64,16 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/*
 
 # copy fftw libraries
-RUN bash -c /bin/echo 'COPY FFTW'
+#RUN bash -c /bin/echo 'COPY FFTW'
 COPY --from=longr/test-gromacs-avx2-256 /usr/local/lib /usr/local/lib
 
-RUN bash -c /bin/echo 'AVX-512'
+#RUN bash -c /bin/echo 'AVX-512'
 COPY --from=longr/test-gromacs-avx-512 /gromacs /gromacs
-RUN bash -c /bin/echo 'SSE2'
+#RUN bash -c /bin/echo 'SSE2'
 COPY --from=longr/test-gromacs-sse2 /gromacs /gromacs
-RUN bash -c /bin/echo 'AVX-256'
+#RUN bash -c /bin/echo 'AVX-256'
 COPY --from=longr/test-gromacs-avx-256 /gromacs /gromacs
-RUN bash -c /bin/echo 'AVX2-256'
+#RUN bash -c /bin/echo 'AVX2-256'
 COPY --from=longr/test-gromacs-avx2-256 /gromacs /gromacs
 
 
