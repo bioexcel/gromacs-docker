@@ -1,2 +1,12 @@
 #!/usr/bin/env bash
+# GROMACS_NEXT_BUILD is a variable in dockerhub.  It is specify per build.
+
+# Order is:
+# AVX_256
+# SSE2
+# AVX2_256
+# AVX_512
+
+# To add a newone, create repo, disable build on push, add Build environment keys: GROMACS_ARCH (the arch) and GROMACS_NEXT_BUILD (this should be set to the trigger key for FINAL. Then modify AVX_512 to trigger new arch instead of FINAL.
+
 if [ -z $GROMACS_NEXT_BUILD ]; then echo "Not set"; else curl -X POST $GROMACS_NEXT_BUILD; fi;
