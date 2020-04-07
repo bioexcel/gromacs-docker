@@ -1,5 +1,5 @@
 ###############################################################################
-# Ubuntu 16.04, CUDA 9.0, OpenMPI, and GROMACS.
+# Ubuntu 18.04, CUDA 10.2, OpenMPI, and GROMACS.
 #
 # Requirements:
 # * gromacs directory in build directory with source for GROMACS.
@@ -24,7 +24,7 @@
 ###############################################################################
 # Build stage
 ###############################################################################
-FROM nvidia/cuda:9.0-devel-ubuntu16.04 as builder
+FROM nvidia/cuda:10.2-devel-ubuntu18.04 as builder
 
 # Update according to http://manual.gromacs.org/documentation/
 ARG GROMACS_VERSION=2020.1
@@ -124,7 +124,7 @@ RUN chmod +x /gromacs/bin/gmx
 ###############################################################################
 # Final stage
 ###############################################################################
-FROM nvidia/cuda:9.0-runtime-ubuntu16.04
+FROM nvidia/cuda:10.2-runtime-ubuntu18.04
 
 # install required packages
 RUN apt-get update \
