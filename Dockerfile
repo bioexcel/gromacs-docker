@@ -79,7 +79,7 @@ RUN curl -o fftw.tar.gz http://www.fftw.org/fftw-${FFTW_VERSION}.tar.gz \
 
 # You can change the architecture list here to add more SIMD types,
 # but make sure to always include SSE2 as a fall-back.
-RUN for ARCH in ${GROMACS_ARCH}; do \
+RUN for ARCH in SSE2 AVX_256; do \
      mkdir -p /gromacs-build.${ARCH} && cd /gromacs-build.${ARCH} \
   && CC=gcc CXX=g++ cmake /gromacs-src \
     -DGMX_OPENMP=ON \
