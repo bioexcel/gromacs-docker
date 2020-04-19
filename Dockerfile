@@ -84,7 +84,6 @@ RUN for ARCH in SSE2 AVX_256 ; do \
     -DGMX_EXTERNAL_LAPACK=ON \
     -DCUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda \
     -DBUILD_SHARED_LIBS=off \
-    -DGMX_PREFER_STATIC_LIBS=on \
     -DCMAKE_INSTALL_PREFIX=/gromacs \
 #    -DREGRESSIONTEST_DOWNLOAD=ON \
 #    -DMPIEXEC_PREFLAGS=--allow-run-as-root \
