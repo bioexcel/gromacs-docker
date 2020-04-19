@@ -30,9 +30,6 @@ FROM nvidia/cuda:10.2-devel-ubuntu18.04 as builder
 ARG GROMACS_VERSION=2020.1
 ARG GROMACS_MD5=1c1b5c0f904d4eac7e3515bc01ce3781
 
-ARG FFTW_VERSION=3.3.8
-ARG FFTW_MD5=8aac833c943d8e90d51b697b27d4384d
-
 # number of make jobs during compile
 ARG JOBS=16
 
@@ -49,6 +46,9 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/*
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib/openmpi/lib
 
+# copy fftw libraries
+COPY --from=gromacs/fftw /usr/local/lib /usr/local/lib
+
 # Download sources
 RUN mkdir -p /gromacs /gromacs-src
 WORKDIR /gromacs-src
@@ -57,17 +57,6 @@ RUN curl -o gromacs.tar.gz http://ftp.gromacs.org/pub/gromacs/gromacs-${GROMACS_
     md5sum -c gromacs.tar.gz.md5 &&\
     tar zxf gromacs.tar.gz &&\
     mv gromacs-${GROMACS_VERSION}/* .
-
-# Install fftw with more optimizations than the default packages
-# It is not critical to run the tests here, since our experience is that the
-# Gromacs unit tests will catch fftw build errors too.
-RUN curl -o fftw.tar.gz http://www.fftw.org/fftw-${FFTW_VERSION}.tar.gz \
-  && echo "${FFTW_MD5}  fftw.tar.gz" > fftw.tar.gz.md5 \
-  && md5sum -c fftw.tar.gz.md5 \
-  && tar -xzvf fftw.tar.gz && cd fftw-${FFTW_VERSION} \
-  && ./configure --disable-double --enable-float --enable-sse2 --enable-avx --enable-avx2 --enable-avx512 --enable-shared --disable-static \
-  && make -j ${JOBS} \
-  && make install
 
 # build GROMACS and run unit tests
 # To cater to different architectures, we build for all of them
@@ -133,7 +122,7 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/*
 
 # copy fftw libraries
-COPY --from=builder /usr/local/lib /usr/local/lib
+COPY --from=gromacs/fftw /usr/local/lib /usr/local/lib
 
 # copy gromacs install
 COPY --from=builder /gromacs /gromacs
