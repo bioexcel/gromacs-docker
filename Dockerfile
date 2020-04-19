@@ -43,7 +43,7 @@ RUN apt-get update \
   && apt-get install -y --no-install-recommends \
     cmake \
     curl \
-    gcc-8 \
+    g++-8 \
     libblas-dev \
     liblapack-dev \
     libopenmpi-dev \
@@ -71,17 +71,20 @@ RUN curl -o gromacs.tar.gz http://ftp.gromacs.org/pub/gromacs/gromacs-${GROMACS_
 
 # You can change the architecture list here to add more SIMD types,
 # but make sure to always include SSE2 as a fall-back.
-RUN for ARCH in SSE2 AVX_256 AVX2_256 AVX_512; do \
+# TODO find a way to add AVX2_256 AVX_512 also.
+RUN for ARCH in SSE2 AVX_256 ; do \
      mkdir -p /gromacs-build.${ARCH} \
   && cd /gromacs-build.${ARCH} \
   && echo "Building GROMACS for ${ARCH}" \
-  && CC=gcc CXX=g++ cmake /gromacs-src \
+  && CC=gcc-8 CXX=g++-8 cmake /gromacs-src \
     -DGMX_OPENMP=ON \
     -DGMX_GPU=ON \
     -DGMX_MPI=OFF \
     -DGMX_EXTERNAL_BLAS=ON \
     -DGMX_EXTERNAL_LAPACK=ON \
     -DCUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda \
+    -DBUILD_SHARED_LIBS=off \
+    -DGMX_PREFER_STATIC_LIBS=on \
     -DCMAKE_INSTALL_PREFIX=/gromacs \
 #    -DREGRESSIONTEST_DOWNLOAD=ON \
 #    -DMPIEXEC_PREFLAGS=--allow-run-as-root \
