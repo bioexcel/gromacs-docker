@@ -37,10 +37,6 @@ ARG FFTW_MD5=8aac833c943d8e90d51b697b27d4384d
 ARG JOBS=16
 
 
-# default loop value
-ARG GROMACS_ARCH='SSE2 AVX_256 AVX2_256 AVX_512'
-
-
 # install required packages
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
@@ -79,7 +75,7 @@ RUN curl -o fftw.tar.gz http://www.fftw.org/fftw-${FFTW_VERSION}.tar.gz \
 
 # You can change the architecture list here to add more SIMD types,
 # but make sure to always include SSE2 as a fall-back.
-RUN for ARCH in SSE2 AVX_256; do \
+RUN for ARCH in SSE2 AVX_256 AVX2_256 AVX_512; do \
      mkdir -p /gromacs-build.${ARCH} && cd /gromacs-build.${ARCH} \
   && CC=gcc CXX=g++ cmake /gromacs-src \
     -DGMX_OPENMP=ON \
@@ -87,7 +83,7 @@ RUN for ARCH in SSE2 AVX_256; do \
     -DGMX_MPI=OFF \
     -DCUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda \
     -DCMAKE_INSTALL_PREFIX=/gromacs \
-    -DREGRESSIONTEST_DOWNLOAD=ON \
+#    -DREGRESSIONTEST_DOWNLOAD=ON \
 #    -DMPIEXEC_PREFLAGS=--allow-run-as-root \
     -DGMX_SIMD=${ARCH} \
     -DCMAKE_INSTALL_BINDIR=bin.${ARCH} \
