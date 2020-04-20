@@ -1,24 +1,12 @@
 ###############################################################################
 # Ubuntu 18.04, CUDA 10.2, OpenMPI, and GROMACS.
 #
-# Requirements:
-# * gromacs directory in build directory with source for GROMACS.
-#
-# Build with:
-# sudo nvidia-docker build -t gromacs . \
-#   --build-arg GROMACS_VERSION=gromacs_version \
-#   --build-arg JOBS=16
-#
-# The build args are optional. To get the versions consistent with GROMACS
-# in general, use e.g. 2018 for the main realease, and 2018.4 for the
-# fourth patch release.
+# This container is built automatically on Docker Hub, but can be built
+# manually with:
+# docker build -t gromacs .
 #
 # Run with:
 # sudo nvidia-docker run -it gromacs
-#
-# Test with:
-# sudo nvidia-docker run -it -v /path/to/gromacs/scripts:/scripts gromacs \
-#   /scripts/validate_gromacs.sh
 ###############################################################################
 
 ###############################################################################
@@ -26,26 +14,9 @@
 ###############################################################################
 FROM nvidia/cuda:10.2-devel-ubuntu18.04 as builder
 
-# Update according to http://manual.gromacs.org/documentation/
-ARG GROMACS_VERSION=2020.1
-ARG GROMACS_MD5=1c1b5c0f904d4eac7e3515bc01ce3781
-
-# number of make jobs during compile
-ARG JOBS=2
-
-
 # install required packages
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
-    software-properties-common \
-  && add-apt-repository ppa:ubuntu-toolchain-r/test \
-  && apt-get update \
-  && apt-get install -y --no-install-recommends \
-    cmake \
-    curl \
-    g++-8 \
-    libblas-dev \
-    liblapack-dev \
     libopenmpi-dev \
     openmpi-bin \
     openmpi-common \
@@ -53,51 +24,7 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/*
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib/openmpi/lib
 
-# copy fftw libraries
-COPY --from=gromacs/fftw /usr/local/lib /usr/local/include /usr/local/
-
-# Download sources
-RUN mkdir -p /gromacs /gromacs-src
-WORKDIR /gromacs-src
-RUN curl -o gromacs.tar.gz http://ftp.gromacs.org/pub/gromacs/gromacs-${GROMACS_VERSION}.tar.gz &&\ 
-    echo "${GROMACS_MD5}  gromacs.tar.gz" > gromacs.tar.gz.md5 &&\
-    md5sum -c gromacs.tar.gz.md5 &&\
-    tar zxf gromacs.tar.gz &&\
-    mv gromacs-${GROMACS_VERSION}/* .
-
-# build GROMACS and run unit tests
-# To cater to different architectures, we build for all of them
-# and install in different bin/lib directories.
-
-# You can change the architecture list here to add more SIMD types,
-# but make sure to always include SSE2 as a fall-back.
-# TODO find a way to add AVX2_256 AVX_512 also.
-RUN for ARCH in SSE2 AVX_256 ; do \
-     mkdir -p /gromacs-build.${ARCH} \
-  && cd /gromacs-build.${ARCH} \
-  && echo "Building GROMACS for ${ARCH}" \
-  && CC=gcc-8 CXX=g++-8 cmake /gromacs-src \
-    -DGMX_OPENMP=ON \
-    -DGMX_GPU=ON \
-    -DGMX_MPI=OFF \
-    -DGMX_EXTERNAL_BLAS=ON \
-    -DGMX_EXTERNAL_LAPACK=ON \
-    -DCUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda \
-    -DBUILD_SHARED_LIBS=off \
-    -DCMAKE_INSTALL_PREFIX=/gromacs \
-#    -DREGRESSIONTEST_DOWNLOAD=ON \
-#    -DMPIEXEC_PREFLAGS=--allow-run-as-root \
-    -DGMX_SIMD=${ARCH} \
-    -DCMAKE_INSTALL_BINDIR=bin.${ARCH} \
-    -DCMAKE_INSTALL_LIBDIR=lib.${ARCH} \
-  && cmake /gromacs-src \
-  && make \
-  && make install; done
-
-# Run tests (optional)
-# We avoid running tests for AVX_512, since that hardware might not be available
-#RUN for ARCH in SSE2 AVX_256 AVX2_256; do \
-#    cd /gromacs-build.${ARCH} && make -j ${JOBS} check; done
+COPY --from=gromacs/gmx-configurations:gmx-2020.1-cuda-10.2-SSE2 /gromacs /gromacs
 
 #
 # Build the program to identify number of AVX512 FMA units
@@ -135,19 +62,9 @@ RUN apt-get update \
     python \
   && rm -rf /var/lib/apt/lists/*
 
-# copy fftw libraries
-COPY --from=gromacs/fftw /usr/local/lib /usr/local/lib
-
 # copy gromacs install
 COPY --from=builder /gromacs /gromacs
 ENV PATH=$PATH:/gromacs/bin
-
-# setup labels
-LABEL com.nvidia.gromacs.version="${GROMACS_VERSION}"
-
-# NVIDIA-specific stuff?
-#WORKDIR /workspace
-#COPY examples examples 
 
 #
 # Enable the entrypoint to use the dockerfile as a GROMACS binary
