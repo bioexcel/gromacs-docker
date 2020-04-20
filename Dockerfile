@@ -24,7 +24,10 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/*
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib/openmpi/lib
 
-COPY --from=gromacs/gmx-configurations:gmx-2020.1-cuda-10.2-SSE2 /gromacs /gromacs
+COPY --from=gromacs/gmx-configurations:gmx-2020.1-cuda-10.2-SSE2     /gromacs /gromacs
+COPY --from=gromacs/gmx-configurations:gmx-2020.1-cuda-10.2-AVX_256  /gromacs /gromacs
+COPY --from=gromacs/gmx-configurations:gmx-2020.1-cuda-10.2-AVX2_256 /gromacs /gromacs
+COPY --from=gromacs/gmx-configurations:gmx-2020.1-cuda-10.2-AVX_512  /gromacs /gromacs
 
 #
 # Build the program to identify number of AVX512 FMA units
