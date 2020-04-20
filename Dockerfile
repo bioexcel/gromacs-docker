@@ -20,7 +20,7 @@ RUN apt-get update \
     libopenmpi-dev \
     openmpi-bin \
     openmpi-common \
-    python \
+    python3 \
   && rm -rf /var/lib/apt/lists/*
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib/openmpi/lib
 
@@ -59,7 +59,7 @@ RUN apt-get update \
     libopenmpi-dev \
     openmpi-bin \
     openmpi-common \
-    python \
+    python3 \
   && rm -rf /var/lib/apt/lists/*
 
 # copy gromacs install
