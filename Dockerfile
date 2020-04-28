@@ -15,7 +15,7 @@ FROM nvidia/cuda:10.2-runtime-ubuntu18.04
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
     libgomp1 \
-    liblapack \
+    liblapack3 \
     openmpi-bin \
     openmpi-common \
     python3 \
