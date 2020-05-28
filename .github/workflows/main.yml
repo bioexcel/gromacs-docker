@@ -1,11 +1,12 @@
 ---
 name: Test
-on: [push]
+on: [push,pull]
 jobs:
   # Initialisation job. This will setup python and run build-all-docker.sh to
   # generate all the needed Dockerfiles.
   build_files:
     runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, 'ci skip')"
     steps:
     - uses: actions/checkout@master
     - uses: actions/setup-python@v1
