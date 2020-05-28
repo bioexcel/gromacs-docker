@@ -1,6 +1,6 @@
 ---
 name: Test
-on: [push,pull]
+on: [push,pull_request]
 jobs:
   # Initialisation job. This will setup python and run build-all-docker.sh to
   # generate all the needed Dockerfiles.
