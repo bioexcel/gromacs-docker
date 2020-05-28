@@ -1,0 +1,85 @@
+---
+name: Test
+on: [push]
+jobs:
+  # Initialisation job. This will setup python and run build-all-docker.sh to
+  # generate all the needed Dockerfiles.
+  build_files:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - uses: actions/setup-python@v1
+      with:
+        python-version: "3.7"
+    - name: Install dependencies
+      run: |
+        set -xe
+        python -VV
+        python -m site
+        python -m pip install --upgrade pip
+        python -m pip install hpccm
+
+    - name: Generate Dockerfiles
+      run: bash build-all-dockerfiles.sh
+
+    - name: Upload dockerfiles
+      uses: actions/upload-artifact@v2
+      with:
+        name: dockerfiles
+        path: "gmx-*"
+        
+  # Build each Docker container from the relevant files.  The Dockerfile
+  # directories need to be added manualy for each gromacs and cuda version,
+  # simd type - perhaps move to variables and for loops in the future?
+  # These are then registered on dockerhub for combining later.
+  # FUTURE:  Register as artifacts instead of on dockerhub?
+  build:
+    needs: build_files
+    strategy:
+      matrix:
+        simd: ["gmx-2020.2-cuda-10.2-AVX_256",
+               "gmx-2020.2-cuda-10.2-AVX_512",
+               "gmx-2020.2-cuda-10.2-AVX2_256",
+               "gmx-2020.2-cuda-10.2-SSE2",
+              ]
+    runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, 'ci skip')"
+    steps:
+    - uses: actions/checkout@master
+
+    - name: Download Dockerfiles
+      uses: actions/download-artifact@v2
+      with:
+        name: dockerfiles
+
+    - name: Build the Docker image
+      run: docker build -t "longr/gromacs-docker:${{matrix.simd}}" -f ${{matrix.simd}}/Dockerfile .
+
+    - name: List containers
+      run: docker ps
+      
+    - name: Docker Login
+      run: docker login -u ${{secrets.DOCKER_USERNAME}} -p ${{secrets.DOCKER_PASSWORD}}
+
+    - name: Docker Push
+      run: docker push "longr/gromacs-docker:${{matrix.simd}}"
+
+
+  # Combine all previously generated dockerfiles into one superfile.
+  combine:
+    needs: build
+    runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, 'ci skip')"
+    steps:
+    - uses: actions/checkout@master
+    - name: Build the Docker image
+      run: docker build -t "longr/gromacs-docker:gmx-2020.2-cuda-10.2" -t "longr/gromacs-docker:latest" -f Dockerfile .
+      
+    - name: Docker Login
+      run: docker login -u ${{secrets.DOCKER_USERNAME}} -p ${{secrets.DOCKER_PASSWORD}}
+
+    - name: Docker Push version tag
+      run: docker push "longr/gromacs-docker:gmx-2020.2-cuda-10.2"
+
+    - name: Docker Push latest tag
+      run: docker push "longr/gromacs-docker:latest"
