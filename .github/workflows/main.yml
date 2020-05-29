@@ -56,15 +56,6 @@ jobs:
     - name: Build the Docker image
       run: docker build -t "longr/gromacs-docker:${{matrix.simd}}" -f ${{matrix.simd}}/Dockerfile .
 
-    - name: Save docker image
-      run: docker save -o ${{matrix.simd}}.tar "longr/gromacs-docker:${{matrix.simd}}"
-
-    - name: Upload docker image
-      uses: actions/upload-artifact@v2
-      with:
-        name: dockerimage_${{matrix.simd}}
-        path: ${{matrix.simd}}.tar
-
     - name: List containers
       run: docker ps
       
