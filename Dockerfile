@@ -9,8 +9,6 @@
 # sudo nvidia-docker run -it gromacs
 ###############################################################################
 
-#Test
-
 FROM nvidia/cuda:10.2-runtime-ubuntu18.04
 
 # install required packages
@@ -27,10 +25,10 @@ RUN apt-get update \
 COPY --from=gromacs/fftw /usr/local/lib /usr/local
 
 # Add the GROMACS configurations
-COPY --from=longr/gromacs-docker:gmx-2020.2-cuda-10.2-AVX_512  /gromacs /gromacs
-COPY --from=longr/gromacs-docker:gmx-2020.2-cuda-10.2-AVX_256  /gromacs /gromacs
-COPY --from=longr/gromacs-docker:gmx-2020.2-cuda-10.2-AVX2_256 /gromacs /gromacs
-COPY --from=longr/gromacs-docker:gmx-2020.2-cuda-10.2-SSE2     /gromacs /gromacs
+COPY --from=gromacs/gromacs-docker:gmx-2020.1-cuda-10.2-SSE2     /gromacs /gromacs
+COPY --from=gromacs/gromacs-docker:gmx-2020.1-cuda-10.2-AVX_256  /gromacs /gromacs
+COPY --from=gromacs/gromacs-docker:gmx-2020.1-cuda-10.2-AVX2_256 /gromacs /gromacs
+COPY --from=gromacs/gromacs-docker:gmx-2020.1-cuda-10.2-AVX_512  /gromacs /gromacs
 
 # Add architecture-detection script
 COPY gmx-chooser /gromacs/bin/gmx
