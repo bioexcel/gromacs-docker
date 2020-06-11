@@ -1,5 +1,5 @@
 ---
-name: Test
+name: Build and push to Docker Hub
 on: [push,pull_request]
 jobs:
   # Initialisation job. This will setup python and run build-all-docker.sh to
