@@ -72,12 +72,27 @@ Other open source dependencies include:
 
 ## Contribute
 
-Contributions welcome!
+Contributions welcome! Please fork this repository and submit a pull request to the dev branch.
 
 The source code for GROMACS is available from http://manual.gromacs.org/current/download and is maintained at https://github.com/gromacs/gromacs
 
-The `Dockerfile` that made this container image is maintained at https://github.com/bioexcel/gromacs-docker
-Please submit any pull request to the `dev` branch as the `master` branch correspond to the `latest` Docker tag.
+### CI Workflow and how the container is built
+The container image is generated through a series of setups by the CI system.
+
+- `build-all-dockerfiles.sh` calls `build-dockerfiles.py` once for each simd-type specified in the array 'simd_types'.
+- `build-dockerfiles.py` generates a dockerfile based on several variables, such as GROMACS version, CUDA version and SIMD type. This is stored in a directory named `gmx-<gromacs_version>-cuda-<cuda_version>-<simd_type>`.
+- github actions will build all the dockerfiles in parallel and register them to dockerhub.
+- The final steps combine all the dockerfiles into one and register the output to dockerhub.
+
+This container image is made by building multiple container images for each of the simd-types requested. These are then combined into one container by a final dockerfile which is called "Dockerfile" and is kept in the root of the repository.
+
+### Changing the gromacs or cuda version.
+
+To bump the gromacs version used in the container, a few changes need to be made in a couple of files.
+
+- `build-all-dockerfiles.sh` - The gromacs and docker versions are defined in variables at the top of this file and need to be changed as needed.
+- `.github/workflows/main.yml` - This is the CI file. At the minute there are four instances of the gromacs and cuda versions that need to be changed in here.  They are imbedded into the tags for the docker containers and are located in the `simd` array.  The versions then need to be changed in the final tags at the end.
+- `Dockerfile` - This is the main dockerfile that combines everything together. The tags that were changed in the CI file need to be updated in here as well.  Additionally for CUDA, the version needs to be changed in the first `FROM` line at the beginning of the file.
 
 
 ## Contact us
