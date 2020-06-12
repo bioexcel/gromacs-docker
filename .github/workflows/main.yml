@@ -70,7 +70,9 @@ jobs:
   combine:
     needs: build
     runs-on: ubuntu-latest
-    if: "!contains(github.event.head_commit.message, 'ci skip')"
+    # Only combine and push to Docker Hub if we are on dev branch (TODO: master)
+    # skip if commit message is "ci skip"
+    if: "${{ github.event_name == 'pull_request' && github.ref == 'dev' && !contains(github.event.head_commit.message, 'ci skip') }}"
     steps:
     - uses: actions/checkout@master
     - name: Build the Docker image
