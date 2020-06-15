@@ -54,7 +54,7 @@ jobs:
         name: dockerfiles
 
     - name: Build the Docker image
-      run: docker build -t "gromacs/gromacs-docker:${{matrix.simd}}" -f ${{matrix.simd}}/Dockerfile .
+      run: docker build -t "gromacs/gromacs:${{matrix.simd}}" -f ${{matrix.simd}}/Dockerfile .
 
     - name: List containers
       run: docker ps
@@ -63,7 +63,7 @@ jobs:
       run: docker login -u ${{secrets.DOCKER_USERNAME}} -p ${{secrets.DOCKER_PASSWORD}}
 
     - name: Docker Push
-      run: docker push "gromacs/gromacs-docker:${{matrix.simd}}"
+      run: docker push "gromacs/gromacs:${{matrix.simd}}"
 
 
   # Combine all previously generated dockerfiles into one superfile.
@@ -76,13 +76,13 @@ jobs:
     steps:
     - uses: actions/checkout@master
     - name: Build the Docker image
-      run: docker build -t "gromacs/gromacs-docker:gmx-2020.2-cuda-10.2" -t "gromacs/gromacs-docker:latest" -f Dockerfile .
+      run: docker build -t "gromacs/gromacs:gmx-2020.2-cuda-10.2" -t "gromacs/gromacs:latest" -f Dockerfile .
       
     - name: Docker Login
       run: docker login -u ${{secrets.DOCKER_USERNAME}} -p ${{secrets.DOCKER_PASSWORD}}
 
     - name: Docker Push version tag
-      run: docker push "gromacs/gromacs-docker:gmx-2020.2-cuda-10.2"
+      run: docker push "gromacs/gromacs:gmx-2020.2-cuda-10.2"
     ## Disabled until we know the above works 
     #- name: Docker Push latest tag
-    #  run: docker push "gromacs/gromacs-docker:latest"
+    #  run: docker push "gromacs/gromacs:latest"
