@@ -63,6 +63,7 @@ jobs:
       run: docker login -u ${{secrets.DOCKER_USERNAME}} -p ${{secrets.DOCKER_PASSWORD}}
 
     - name: Docker Push
+      if: "${{ github.event_name == 'push' }}"
       run: docker push "gromacs/gromacs:${{matrix.simd}}"
 
 
@@ -70,12 +71,12 @@ jobs:
   combine:
     needs: build
     runs-on: ubuntu-18.04
-    # Only combine and push to Docker Hub if we are on dev branch (TODO: master)
-    # skip if commit message is "ci skip"
-    if: "${{ github.event_name == 'pull_request' && github.ref == 'dev' && !contains(github.event.head_commit.message, 'ci skip') }}"
+    # Only combine and push to Docker Hub if we are on dev branch (TODO: master) and 
+    # this is not a pull request. Skip if commit message is "ci skip"
+    if: "${{ github.event_name == 'push' && !contains(github.event.head_commit.message, 'ci skip') }}"
     steps:
     - uses: actions/checkout@master
-    - name: Build the Docker image
+    - name: Build the combined Docker image
       run: docker build -t "gromacs/gromacs:gmx-2020.2-cuda-10.2" -t "gromacs/gromacs:latest" -f Dockerfile .
       
     - name: Docker Login
@@ -83,6 +84,6 @@ jobs:
 
     - name: Docker Push version tag
       run: docker push "gromacs/gromacs:gmx-2020.2-cuda-10.2"
-    ## Disabled until we know the above works 
-    #- name: Docker Push latest tag
-    #  run: docker push "gromacs/gromacs:latest"
+    - name: Docker Push latest tag
+      if: "${{ github.ref == 'master' }}"
+      run: docker push "gromacs/gromacs:latest"
