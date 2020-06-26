@@ -36,8 +36,8 @@ jobs:
       env:
         docker_tag: gmx-${{matrix.gromacs_version}}-cuda-${{matrix.cuda_version}}-${{matrix.simd}}
       run: |
-        mkdir -p ${{docker_tag}}
-        python3 build-dockerfiles.py --simd ${{matrix.simd}} --gcc 8 --cuda ${{matrix.cuda_version}} --version ${{matrix.gromacs_version}} --format docker > ${{docker_tag}}/Dockerfile
+        mkdir -p ${{env.docker_tag}}
+        python3 build-dockerfiles.py --simd ${{matrix.simd}} --gcc 8 --cuda ${{matrix.cuda_version}} --version ${{matrix.gromacs_version}} --format docker > ${{env.docker_tag}}/Dockerfile
         
     - name: Upload dockerfiles
       uses: actions/upload-artifact@v2
@@ -120,7 +120,7 @@ jobs:
       env:
         DOCKER_REPO: ${{env.docker_repo}}
         docker_tag: gmx-${{matrix.gromacs_version}}-cuda-${{matrix.cuda_version}}
-      run: docker build -t "${DOCKER_REPO}:${{docker_tag}}" -t "${DOCKER_REPO}:latest" -f Dockerfile .
+      run: docker build -t "${DOCKER_REPO}:${{env.docker_tag}}" -t "${DOCKER_REPO}:latest" -f Dockerfile .
 
       
 
@@ -128,7 +128,7 @@ jobs:
       env:
         DOCKER_REPO: ${{env.docker_repo}}
         docker_tag: gmx-${{matrix.gromacs_version}}-cuda-${{matrix.cuda_version}}
-      run: docker push "${DOCKER_REPO}:${{docker_tag}}"
+      run: docker push "${DOCKER_REPO}:${{env.docker_tag}}"
 
     - name: Docker Push latest tag
       if: "${{ github.ref == 'master' }}"
