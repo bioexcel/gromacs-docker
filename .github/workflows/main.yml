@@ -82,7 +82,9 @@ jobs:
       env:
         DOCKER_REPO: ${{env.docker_repo}}
         docker_tag: gmx-${{matrix.gromacs}}-cuda-${{matrix.cuda}}-${{matrix.simd}}
-      run: docker build -t "${DOCKER_REPO}:${{env.docker_tag}}" -f ${{env.docker_tag}}/Dockerfile .
+      run: |
+        echo "${DOCKER_REPO}:${{env.docker_tag}}"
+        docker build -t "${DOCKER_REPO}:${{env.docker_tag}}" -f ${{env.docker_tag}}/Dockerfile .
 
     - name: List containers
       run: docker ps
@@ -93,8 +95,11 @@ jobs:
     - name: Docker Push
       env:
         DOCKER_REPO: ${{env.docker_repo}}
+        docker_tag: gmx-${{matrix.gromacs}}-cuda-${{matrix.cuda}}-${{matrix.simd}}
       if: "${{ github.event_name == 'push' }}"
-      run: docker push "${DOCKER_REPO}:${{env.docker_repo}}"
+      run: |
+        echo "${DOCKER_REPO}:${{env.docker_tag}}"
+        docker push "${DOCKER_REPO}:${{env.docker_tag}}"
 
 
 
