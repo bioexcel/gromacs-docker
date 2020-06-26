@@ -4,9 +4,34 @@ on: [push,pull_request]
 env:
   docker_repo: longr/gromacs-docker
 
+
+# Need to find a way to add in fftw location as a variable, and also to generate Dockerfile for combine in the same way.  Currently combine needs to be manually changed.
+# Set the Dockerfile to take no input as gromacs/docker  JUST USE SED!!!
+
+  
 jobs:
-  build:
-    needs: build_files
+  build_fftw_container:
+    runs-on: ubuntu-18.04
+    if: "!contains(github.event.head_commit.message, 'ci skip')"
+    steps:
+    - uses: actions/checkout@master
+
+    - name: Build the Docker image
+      run: docker build -t "${DOCKER_REPO}:fftw" -f Dockerfile-fftw .
+
+    - name: List containers
+      run: docker ps
+      
+    - name: Docker Login
+      run: docker login -u ${{secrets.DOCKER_USERNAME}} -p ${{secrets.DOCKER_PASSWORD}}
+
+    - name: Docker Push
+      env:
+        DOCKER_REPO: ${{env.docker_repo}}
+      if: "${{ github.event_name == 'push' }}"
+      run: docker push "${DOCKER_REPO}:fftw"
+    
+  build_container:
     strategy:
       matrix:
         simd: ["AVX_256",
@@ -65,12 +90,12 @@ jobs:
       env:
         DOCKER_REPO: ${{env.docker_repo}}
       if: "${{ github.event_name == 'push' }}"
-      run: docker push "${DOCKER_REPO}:${{matrix.simd}}"
+      run: docker push "${DOCKER_REPO}:${{env.docker_repo}}"
 
 
 
   # Combine all previously generated dockerfiles into one superfile.
-  combine:
+  combine_containers:
     strategy:
       matrix:
         simd: ["AVX_256",
@@ -96,7 +121,9 @@ jobs:
       env:
         DOCKER_REPO: ${{env.docker_repo}}
         docker_tag: gmx-${{matrix.gromacs}}-cuda-${{matrix.cuda}}
-      run: docker build -t "${DOCKER_REPO}:${{env.docker_tag}}" -t "${DOCKER_REPO}:latest" -f Dockerfile .
+      run: |
+        sed -i 's|gromacs/gromacs-docker|longr/gromacs-docker|g' Dockerfile
+        docker build -t "${DOCKER_REPO}:${{env.docker_tag}}" -t "${DOCKER_REPO}:latest" -f Dockerfile .
 
       
 
