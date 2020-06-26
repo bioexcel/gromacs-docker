@@ -2,7 +2,7 @@
 name: Build and push to Docker Hub
 on: [push,pull_request]
 env:
-  DOCKER: longr/gromacs-docker
+  docker_repo: longr/gromacs-docker
 
 jobs:
   # Initialisation job. This will setup python and run build-all-docker.sh to
@@ -38,8 +38,6 @@ jobs:
   # These are then registered on dockerhub for combining later.
 
   build:
-    env:
-      DOCKER_REPO: ${{env.DOCKER}}
     needs: build_files
     strategy:
       matrix:
@@ -61,7 +59,7 @@ jobs:
 
     - name: Build the Docker image
       env:
-        DOCKER_REPO: ${{env.DOCKER}}
+        DOCKER_REPO: ${{env.docker_repo}}
       run: docker build -t "${DOCKER_REPO}:${{matrix.simd}}" -f ${{matrix.simd}}/Dockerfile .
 
 
@@ -73,7 +71,7 @@ jobs:
 
     - name: Docker Push
       env:
-        DOCKER_REPO: ${{env.DOCKER}}
+        DOCKER_REPO: ${{env.docker_repo}}
       if: "${{ github.event_name == 'push' }}"
       run: docker push "${DOCKER_REPO}:${{matrix.simd}}"
 
@@ -89,7 +87,7 @@ jobs:
     - uses: actions/checkout@master
     - name: Build the combined Docker image
       env:
-        DOCKER_REPO: ${{env.DOCKER}}
+        DOCKER_REPO: ${{env.docker_repo}}
       run: docker build -t "${DOCKER_REPO}:gmx-2020.2-cuda-10.2" -t "${DOCKER_REPO}:latest" -f Dockerfile .
 
       
@@ -98,12 +96,12 @@ jobs:
 
     - name: Docker Push version tag
       env:
-        DOCKER_REPO: ${{env.DOCKER}}
+        DOCKER_REPO: ${{env.docker_repo}}
       run: docker push "${DOCKER_REPO}:gmx-2020.2-cuda-10.2"
 
     - name: Docker Push latest tag
       if: "${{ github.ref == 'master' }}"
       env:
-        DOCKER_REPO: ${{env.DOCKER}}
+        DOCKER_REPO: ${{env.docker_repo}}
       run: docker push "${DOCKER_REPO}:latest"
 
