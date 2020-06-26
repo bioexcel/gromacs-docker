@@ -49,9 +49,6 @@ jobs:
     runs-on: ubuntu-18.04
     if: "!contains(github.event.head_commit.message, 'ci skip')"
     steps:
-      env:
-        docker_repo: ${{env.docker_repo}}
-
     - uses: actions/checkout@master
 
     - name: Download Dockerfiles
@@ -61,6 +58,9 @@ jobs:
 
     - name: Build the Docker image
       run: docker build -t "${{docker_repo}}:${{matrix.simd}}" -f ${{matrix.simd}}/Dockerfile .
+      env:
+        docker_repo: ${{env.docker_repo}}
+
 
     - name: List containers
       run: docker ps
@@ -71,6 +71,8 @@ jobs:
     - name: Docker Push
       if: "${{ github.event_name == 'push' }}"
       run: docker push "${{docker_repo}}:${{matrix.simd}}"
+      env:
+        docker_repo: ${{env.docker_repo}}
 
 
   # Combine all previously generated dockerfiles into one superfile.
