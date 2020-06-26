@@ -71,9 +71,9 @@ jobs:
 
     - name: Docker Push
       env:
-        docker_repo: ${{env.DOCKER}}
+        DOCKER_REPO: ${{env.DOCKER}}
       if: "${{ github.event_name == 'push' }}"
-      run: docker push "${docker_repo}:${{matrix.simd}}"
+      run: docker push "${DOCKER_REPO}:${{matrix.simd}}"
 
 
   # Combine all previously generated dockerfiles into one superfile.
@@ -87,8 +87,8 @@ jobs:
     - uses: actions/checkout@master
     - name: Build the combined Docker image
       env:
-        docker_repo: ${{env.DOCKER}}
-      run: docker build -t "${{docker_repo}}:gmx-2020.2-cuda-10.2" -t "${{docker_repo}}:latest" -f Dockerfile .
+        DOCKER_REPO: ${{env.DOCKER}}
+      run: docker build -t "${DOCKER_REPO}:gmx-2020.2-cuda-10.2" -t "${DOCKER_REPO}:latest" -f Dockerfile .
 
       
     - name: Docker Login
@@ -96,12 +96,12 @@ jobs:
 
     - name: Docker Push version tag
       env:
-        docker_repo: ${{env.DOCKER}}
-      run: docker push "${{docker_repo}}:gmx-2020.2-cuda-10.2"
+        DOCKER_REPO: ${{env.DOCKER}}
+      run: docker push "${DOCKER_REPO}:gmx-2020.2-cuda-10.2"
 
     - name: Docker Push latest tag
       if: "${{ github.ref == 'master' }}"
       env:
-        docker_repo: ${{env.DOCKER}}
-      run: docker push "${{docker_repo}}:latest"
+        DOCKER_REPO: ${{env.DOCKER}}
+      run: docker push "${DOCKER_REPO}:latest"
 
