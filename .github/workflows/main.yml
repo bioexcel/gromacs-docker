@@ -38,6 +38,8 @@ jobs:
   # These are then registered on dockerhub for combining later.
 
   build:
+    env:
+      DOCKER_REPO: ${{env.DOCKER}}
     needs: build_files
     strategy:
       matrix:
