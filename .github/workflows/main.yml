@@ -34,10 +34,10 @@ jobs:
 
     - name: Generate Dockerfiles
       env:
-        docker_tag: gmx-${{matrix.gromacs_version}}-cuda-${{matrix.cuda_version}}-${{matrix.simd}}
+        docker_tag: gmx-${{matrix.gromacs}}-cuda-${{matrix.cuda}}-${{matrix.simd}}
       run: |
         mkdir -p ${{env.docker_tag}}
-        python3 build-dockerfiles.py --simd ${{matrix.simd}} --gcc 8 --cuda ${{matrix.cuda_version}} --version ${{matrix.gromacs_version}} --format docker > ${{env.docker_tag}}/Dockerfile
+        python3 build-dockerfiles.py --simd ${{matrix.simd}} --gcc 8 --cuda ${{matrix.cuda}} --version ${{matrix.gromacs}} --format docker > ${{env.docker_tag}}/Dockerfile
         
     - name: Upload dockerfiles
       uses: actions/upload-artifact@v2
@@ -76,7 +76,7 @@ jobs:
     - name: Build the Docker image
       env:
         DOCKER_REPO: ${{env.docker_repo}}
-        docker_tag: gmx-${{matrix.gromacs_version}}-cuda-${{matrix.cuda_version}}-${{matrix.simd}}
+        docker_tag: gmx-${{matrix.gromacs}}-cuda-${{matrix.cuda}}-${{matrix.simd}}
       run: docker build -t "${DOCKER_REPO}:${{env.docker_tag}}" -f ${{env.docker_tag}}/Dockerfile .
 
 
@@ -119,7 +119,7 @@ jobs:
     - name: Build the combined Docker image
       env:
         DOCKER_REPO: ${{env.docker_repo}}
-        docker_tag: gmx-${{matrix.gromacs_version}}-cuda-${{matrix.cuda_version}}
+        docker_tag: gmx-${{matrix.gromacs}}-cuda-${{matrix.cuda}}
       run: docker build -t "${DOCKER_REPO}:${{env.docker_tag}}" -t "${DOCKER_REPO}:latest" -f Dockerfile .
 
       
@@ -127,7 +127,7 @@ jobs:
     - name: Docker Push version tag
       env:
         DOCKER_REPO: ${{env.docker_repo}}
-        docker_tag: gmx-${{matrix.gromacs_version}}-cuda-${{matrix.cuda_version}}
+        docker_tag: gmx-${{matrix.gromacs}}-cuda-${{matrix.cuda}}
       run: docker push "${DOCKER_REPO}:${{env.docker_tag}}"
 
     - name: Docker Push latest tag
