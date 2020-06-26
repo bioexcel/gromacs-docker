@@ -1,6 +1,9 @@
 ---
 name: Build and push to Docker Hub
 on: [push,pull_request]
+env:
+  docker_repo: ["longr/gromacs-docker"]
+
 jobs:
   # Initialisation job. This will setup python and run build-all-docker.sh to
   # generate all the needed Dockerfiles.
@@ -33,7 +36,7 @@ jobs:
   # directories need to be added manualy for each gromacs and cuda version,
   # simd type - perhaps move to variables and for loops in the future?
   # These are then registered on dockerhub for combining later.
-  # FUTURE:  Register as artifacts instead of on dockerhub?
+
   build:
     needs: build_files
     strategy:
@@ -54,7 +57,7 @@ jobs:
         name: dockerfiles
 
     - name: Build the Docker image
-      run: docker build -t "gromacs/gromacs:${{matrix.simd}}" -f ${{matrix.simd}}/Dockerfile .
+      run: docker build -t "${{docker_repo}}:${{matrix.simd}}" -f ${{matrix.simd}}/Dockerfile .
 
     - name: List containers
       run: docker ps
@@ -64,7 +67,7 @@ jobs:
 
     - name: Docker Push
       if: "${{ github.event_name == 'push' }}"
-      run: docker push "gromacs/gromacs:${{matrix.simd}}"
+      run: docker push "${{docker_repo}}:${{matrix.simd}}"
 
 
   # Combine all previously generated dockerfiles into one superfile.
@@ -77,13 +80,13 @@ jobs:
     steps:
     - uses: actions/checkout@master
     - name: Build the combined Docker image
-      run: docker build -t "gromacs/gromacs:gmx-2020.2-cuda-10.2" -t "gromacs/gromacs:latest" -f Dockerfile .
+      run: docker build -t "${{docker_repo}}:gmx-2020.2-cuda-10.2" -t "${{docker_repo}}:latest" -f Dockerfile .
       
     - name: Docker Login
       run: docker login -u ${{secrets.DOCKER_USERNAME}} -p ${{secrets.DOCKER_PASSWORD}}
 
     - name: Docker Push version tag
-      run: docker push "gromacs/gromacs:gmx-2020.2-cuda-10.2"
+      run: docker push "${{docker_repo}}:gmx-2020.2-cuda-10.2"
     - name: Docker Push latest tag
       if: "${{ github.ref == 'master' }}"
-      run: docker push "gromacs/gromacs:latest"
+      run: docker push "${{docker_repo}}:latest"
