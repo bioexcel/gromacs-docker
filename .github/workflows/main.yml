@@ -38,8 +38,6 @@ jobs:
   # These are then registered on dockerhub for combining later.
 
   build:
-    env:
-      docker_repo: ${{env.docker_repo}}
     needs: build_files
     strategy:
       matrix:
@@ -51,6 +49,9 @@ jobs:
     runs-on: ubuntu-18.04
     if: "!contains(github.event.head_commit.message, 'ci skip')"
     steps:
+      env:
+        docker_repo: ${{env.docker_repo}}
+
     - uses: actions/checkout@master
 
     - name: Download Dockerfiles
@@ -74,14 +75,14 @@ jobs:
 
   # Combine all previously generated dockerfiles into one superfile.
   combine:
-    env:
-      docker_repo: ${{env.docker_repo}}
     needs: build
     runs-on: ubuntu-18.04
     # Only combine and push to Docker Hub if we are on dev branch (TODO: master) and 
     # this is not a pull request. Skip if commit message is "ci skip"
     if: "${{ github.event_name == 'push' && !contains(github.event.head_commit.message, 'ci skip') }}"
     steps:
+      env:
+        docker_repo: ${{env.docker_repo}}
     - uses: actions/checkout@master
     - name: Build the combined Docker image
       run: docker build -t "${{docker_repo}}:gmx-2020.2-cuda-10.2" -t "${{docker_repo}}:latest" -f Dockerfile .
