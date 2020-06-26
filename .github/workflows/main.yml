@@ -2,7 +2,7 @@
 name: Build and push to Docker Hub
 on: [push,pull_request]
 env:
-  docker_repo: "longr/gromacs-docker"
+  DOCKER: "longr/gromacs-docker"
 
 jobs:
   # Initialisation job. This will setup python and run build-all-docker.sh to
@@ -59,7 +59,7 @@ jobs:
     - name: Build the Docker image
       run: docker build -t "${{docker_repo}}:${{matrix.simd}}" -f ${{matrix.simd}}/Dockerfile .
       env:
-        docker_repo: ${{env.docker_repo}}
+        docker_repo: ${{env.DOCKER}}
 
 
     - name: List containers
@@ -72,7 +72,7 @@ jobs:
       if: "${{ github.event_name == 'push' }}"
       run: docker push "${{docker_repo}}:${{matrix.simd}}"
       env:
-        docker_repo: ${{env.docker_repo}}
+        docker_repo: ${{env.DOCKER}}
 
 
   # Combine all previously generated dockerfiles into one superfile.
@@ -87,7 +87,7 @@ jobs:
     - name: Build the combined Docker image
       run: docker build -t "${{docker_repo}}:gmx-2020.2-cuda-10.2" -t "${{docker_repo}}:latest" -f Dockerfile .
       env:
-        docker_repo: ${{env.docker_repo}}
+        docker_repo: ${{env.DOCKER}}
 
       
     - name: Docker Login
@@ -96,11 +96,11 @@ jobs:
     - name: Docker Push version tag
       run: docker push "${{docker_repo}}:gmx-2020.2-cuda-10.2"
       env:
-        docker_repo: ${{env.docker_repo}}
+        docker_repo: ${{env.DOCKER}}
 
     - name: Docker Push latest tag
       if: "${{ github.ref == 'master' }}"
       run: docker push "${{docker_repo}}:latest"
       env:
-        docker_repo: ${{env.docker_repo}}
+        docker_repo: ${{env.DOCKER}}
 
