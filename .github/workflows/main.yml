@@ -105,7 +105,7 @@ jobs:
               ]
         gromacs: ["2020.2"]
         cuda: ["10.2"]
-    needs: build
+    needs: build_container
     runs-on: ubuntu-18.04
 
     # Only combine and push to Docker Hub if we are on dev branch (TODO: master) and 
