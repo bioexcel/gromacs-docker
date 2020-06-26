@@ -3,6 +3,7 @@ name: Build and push to Docker Hub
 on: [push,pull_request]
 env:
   docker_repo: longr/gromacs-docker
+  fftw_repo: gromacs/fftw
 
 
 # Need to find a way to add in fftw location as a variable, and also to generate Dockerfile for combine in the same way.  Currently combine needs to be manually changed.
@@ -19,7 +20,7 @@ jobs:
       env:
         DOCKER_REPO: ${{env.docker_repo}}
       run: |
-        ls
+        sed -i 's|gromacs/fftw|longr/fftw|g' Dockerfile
         docker build -t "${DOCKER_REPO}:fftw" -f fftw/Dockerfile .
 
     - name: List containers
