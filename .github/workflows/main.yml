@@ -32,6 +32,8 @@ jobs:
         name: dockerfiles
         path: "gmx-*"
         
+
+
   # Build each Docker container from the relevant files.  The Dockerfile
   # directories need to be added manualy for each gromacs and cuda version,
   # simd type - perhaps move to variables and for loops in the future?
@@ -46,6 +48,8 @@ jobs:
                "gmx-2020.2-cuda-10.2-AVX2_256",
                "gmx-2020.2-cuda-10.2-SSE2",
               ]
+        gromacs_version: "2020.2"
+        cuda_version: "10.2"
     runs-on: ubuntu-18.04
     
     if: "!contains(github.event.head_commit.message, 'ci skip')"
@@ -60,7 +64,8 @@ jobs:
     - name: Build the Docker image
       env:
         DOCKER_REPO: ${{env.docker_repo}}
-      run: docker build -t "${DOCKER_REPO}:${{matrix.simd}}" -f ${{matrix.simd}}/Dockerfile .
+        docker_tag: gmx-${{matrix.gromacs_version}}-cuda-${{matrix.cuda_version}}-${{matrix.simd}}
+      run: docker build -t "${DOCKER_REPO}:${{env.docker_tag}}" -f ${{env.docker_tag}}/Dockerfile .
 
 
     - name: List containers
@@ -85,14 +90,16 @@ jobs:
     if: "${{ github.event_name == 'push' && !contains(github.event.head_commit.message, 'ci skip') }}"
     steps:
     - uses: actions/checkout@master
+
+    - name: Docker Login
+      run: docker login -u ${{secrets.DOCKER_USERNAME}} -p ${{secrets.DOCKER_PASSWORD}}
+
     - name: Build the combined Docker image
       env:
         DOCKER_REPO: ${{env.docker_repo}}
       run: docker build -t "${DOCKER_REPO}:gmx-2020.2-cuda-10.2" -t "${DOCKER_REPO}:latest" -f Dockerfile .
 
       
-    - name: Docker Login
-      run: docker login -u ${{secrets.DOCKER_USERNAME}} -p ${{secrets.DOCKER_PASSWORD}}
 
     - name: Docker Push version tag
       env:
