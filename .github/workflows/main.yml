@@ -5,52 +5,6 @@ env:
   docker_repo: longr/gromacs-docker
 
 jobs:
-  # Initialisation job. This will setup python and run build-all-docker.sh to
-  # generate all the needed Dockerfiles.
-  build_files:
-    strategy:
-      matrix:
-        simd: ["AVX_256",
-               "AVX_512",
-               "AVX2_256",
-               "SSE2",
-              ]
-        gromacs: ["2020.2"]
-        cuda: ["10.2"]
-    runs-on: ubuntu-18.04
-    if: "!contains(github.event.head_commit.message, 'ci skip')"
-    steps:
-    - uses: actions/checkout@master
-    - uses: actions/setup-python@v1
-      with:
-        python-version: "3.7"
-    - name: Install dependencies
-      run: |
-        set -xe
-        python -VV
-        python -m site
-        python -m pip install --upgrade pip
-        python -m pip install hpccm
-
-    - name: Generate Dockerfiles
-      env:
-        docker_tag: gmx-${{matrix.gromacs}}-cuda-${{matrix.cuda}}-${{matrix.simd}}
-      run: |
-        mkdir -p ${{env.docker_tag}}
-        python3 build-dockerfiles.py --simd ${{matrix.simd}} --gcc 8 --cuda ${{matrix.cuda}} --version ${{matrix.gromacs}} --format docker > ${{env.docker_tag}}/Dockerfile
-        
-    - name: Upload dockerfiles
-      uses: actions/upload-artifact@v2
-      with:
-        name: dockerfiles
-        path: "gmx-*"
-
-
-  # Build each Docker container from the relevant files.  The Dockerfile
-  # directories need to be added manualy for each gromacs and cuda version,
-  # simd type - perhaps move to variables and for loops in the future?
-  # These are then registered on dockerhub for combining later.
-
   build:
     needs: build_files
     strategy:
@@ -63,22 +17,43 @@ jobs:
         gromacs: ["2020.2"]
         cuda: ["10.2"]
     runs-on: ubuntu-18.04
-    
+
+    # Initialisation job. This will setup python and run build-all-docker.sh to
+    # generate all the needed Dockerfiles.
+
     if: "!contains(github.event.head_commit.message, 'ci skip')"
     steps:
     - uses: actions/checkout@master
-
-    - name: Download Dockerfiles
-      uses: actions/download-artifact@v2
+    - uses: actions/setup-python@v1
       with:
-        name: dockerfiles
+        python-version: "3.7"
+
+    - name: Install python dependencies
+      run: |
+        set -xe
+        python -VV
+        python -m site
+        python -m pip install --upgrade pip
+        python -m pip install hpccm
+
+
+    # Build each Docker container from the relevant files.  The Dockerfile
+    # directories need to be added manualy for each gromacs and cuda version,
+    # simd type - perhaps move to variables and for loops in the future?
+    # These are then registered on dockerhub for combining later.
+
+    - name: Generate Dockerfiles
+      env:
+        docker_tag: gmx-${{matrix.gromacs}}-cuda-${{matrix.cuda}}-${{matrix.simd}}
+      run: |
+        mkdir -p ${{env.docker_tag}}
+        python3 build-dockerfiles.py --simd ${{matrix.simd}} --gcc 8 --cuda ${{matrix.cuda}} --version ${{matrix.gromacs}} --format docker > ${{env.docker_tag}}/Dockerfile
 
     - name: Build the Docker image
       env:
         DOCKER_REPO: ${{env.docker_repo}}
         docker_tag: gmx-${{matrix.gromacs}}-cuda-${{matrix.cuda}}-${{matrix.simd}}
       run: docker build -t "${DOCKER_REPO}:${{env.docker_tag}}" -f ${{env.docker_tag}}/Dockerfile .
-
 
     - name: List containers
       run: docker ps
@@ -91,6 +66,7 @@ jobs:
         DOCKER_REPO: ${{env.docker_repo}}
       if: "${{ github.event_name == 'push' }}"
       run: docker push "${DOCKER_REPO}:${{matrix.simd}}"
+
 
 
   # Combine all previously generated dockerfiles into one superfile.
