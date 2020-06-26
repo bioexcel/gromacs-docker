@@ -5,8 +5,6 @@ env:
   docker_repo: "longr/gromacs-docker"
 
 jobs:
-  env:
-    docker_repo: ${{env.docker_repo}}
   # Initialisation job. This will setup python and run build-all-docker.sh to
   # generate all the needed Dockerfiles.
   build_files:
@@ -40,6 +38,8 @@ jobs:
   # These are then registered on dockerhub for combining later.
 
   build:
+    env:
+      docker_repo: ${{env.docker_repo}}
     needs: build_files
     strategy:
       matrix:
@@ -74,6 +74,8 @@ jobs:
 
   # Combine all previously generated dockerfiles into one superfile.
   combine:
+    env:
+      docker_repo: ${{env.docker_repo}}
     needs: build
     runs-on: ubuntu-18.04
     # Only combine and push to Docker Hub if we are on dev branch (TODO: master) and 
