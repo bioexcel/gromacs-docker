@@ -17,6 +17,8 @@ jobs:
     - uses: actions/checkout@master
 
     - name: Build the Docker image
+      env:
+        DOCKER_REPO: ${{env.docker_repo}}
       run: docker build -t "${DOCKER_REPO}:fftw" -f Dockerfile-fftw .
 
     - name: List containers
