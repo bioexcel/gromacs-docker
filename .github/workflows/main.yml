@@ -8,6 +8,15 @@ jobs:
   # Initialisation job. This will setup python and run build-all-docker.sh to
   # generate all the needed Dockerfiles.
   build_files:
+    strategy:
+      matrix:
+        simd: ["AVX_256",
+               "AVX_512",
+               "AVX2_256",
+               "SSE2",
+              ]
+        gromacs: ["2020.22"]
+        cuda: ["10.2"]
     runs-on: ubuntu-18.04
     if: "!contains(github.event.head_commit.message, 'ci skip')"
     steps:
@@ -24,14 +33,17 @@ jobs:
         python -m pip install hpccm
 
     - name: Generate Dockerfiles
-      run: bash build-all-dockerfiles.sh
-
+      env:
+        docker_tag: gmx-${{matrix.gromacs_version}}-cuda-${{matrix.cuda_version}}-${{matrix.simd}}
+      run: |
+        mkdir -p ${{docker_tag}}
+        python3 build-dockerfiles.py --simd ${{matrix.simd}} --gcc 8 --cuda ${{matrix.cuda_version}} --version ${{matrix.gromacs_version}} --format docker > ${{docker_tag}}/Dockerfile
+x
     - name: Upload dockerfiles
       uses: actions/upload-artifact@v2
       with:
         name: dockerfiles
         path: "gmx-*"
-        
 
 
   # Build each Docker container from the relevant files.  The Dockerfile
@@ -83,8 +95,18 @@ jobs:
 
   # Combine all previously generated dockerfiles into one superfile.
   combine:
+    strategy:
+      matrix:
+        simd: ["AVX_256",
+               "AVX_512",
+               "AVX2_256",
+               "SSE2",
+              ]
+        gromacs: ["2020.22"]
+        cuda: ["10.2"]
     needs: build
     runs-on: ubuntu-18.04
+
     # Only combine and push to Docker Hub if we are on dev branch (TODO: master) and 
     # this is not a pull request. Skip if commit message is "ci skip"
     if: "${{ github.event_name == 'push' && !contains(github.event.head_commit.message, 'ci skip') }}"
@@ -97,14 +119,16 @@ jobs:
     - name: Build the combined Docker image
       env:
         DOCKER_REPO: ${{env.docker_repo}}
-      run: docker build -t "${DOCKER_REPO}:gmx-2020.2-cuda-10.2" -t "${DOCKER_REPO}:latest" -f Dockerfile .
+        docker_tag: gmx-${{matrix.gromacs_version}}-cuda-${{matrix.cuda_version}}
+      run: docker build -t "${DOCKER_REPO}:${{docker_tag}}" -t "${DOCKER_REPO}:latest" -f Dockerfile .
 
       
 
     - name: Docker Push version tag
       env:
         DOCKER_REPO: ${{env.docker_repo}}
-      run: docker push "${DOCKER_REPO}:gmx-2020.2-cuda-10.2"
+        docker_tag: gmx-${{matrix.gromacs_version}}-cuda-${{matrix.cuda_version}}
+      run: docker push "${DOCKER_REPO}:${{docker_tag}}"
 
     - name: Docker Push latest tag
       if: "${{ github.ref == 'master' }}"
