@@ -2,7 +2,7 @@
 name: Build and push to Docker Hub
 on: [push,pull_request]
 env:
-  DOCKER: "longr/gromacs-docker"
+  DOCKER: longr/gromacs-docker
 
 jobs:
   # Initialisation job. This will setup python and run build-all-docker.sh to
@@ -59,8 +59,8 @@ jobs:
 
     - name: Build the Docker image
       env:
-        docker_repo: ${{env.DOCKER}}
-      run: docker build -t "${{docker_repo}}:${{matrix.simd}}" -f ${{matrix.simd}}/Dockerfile .
+        DOCKER_REPO: ${{env.DOCKER}}
+      run: docker build -t "${DOCKER_REPO}:${{matrix.simd}}" -f ${{matrix.simd}}/Dockerfile .
 
 
     - name: List containers
