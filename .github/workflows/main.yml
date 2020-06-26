@@ -19,7 +19,7 @@ jobs:
     - name: Build the Docker image
       env:
         DOCKER_REPO: ${{env.docker_repo}}
-      run: docker build -t "${DOCKER_REPO}:fftw" -f Dockerfile-fftw .
+      run: docker build -t "${DOCKER_REPO}:fftw" -f fftw/Dockerfile .
 
     - name: List containers
       run: docker ps
