@@ -5,6 +5,8 @@ env:
   docker_repo: "longr/gromacs-docker"
 
 jobs:
+  env:
+    docker_repo: ${{env.docker_repo}}
   # Initialisation job. This will setup python and run build-all-docker.sh to
   # generate all the needed Dockerfiles.
   build_files:
