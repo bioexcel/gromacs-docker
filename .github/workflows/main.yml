@@ -73,7 +73,7 @@ jobs:
       env:
         docker_repo: ${{env.DOCKER}}
       if: "${{ github.event_name == 'push' }}"
-      run: docker push "${{docker_repo}}:${{matrix.simd}}"
+      run: docker push "${docker_repo}:${{matrix.simd}}"
 
 
   # Combine all previously generated dockerfiles into one superfile.
