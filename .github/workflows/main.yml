@@ -12,14 +12,15 @@ env:
 jobs:
   build_fftw_container:
     runs-on: ubuntu-18.04
-    if: "!contains(github.event.head_commit.message, 'ci skip')"
     steps:
     - uses: actions/checkout@master
 
     - name: Build the Docker image
       env:
         DOCKER_REPO: ${{env.docker_repo}}
-      run: docker build -t "${DOCKER_REPO}:fftw" -f fftw/Dockerfile .
+      run: |
+        ls
+        docker build -t "${DOCKER_REPO}:fftw" -f fftw/Dockerfile .
 
     - name: List containers
       run: docker ps
