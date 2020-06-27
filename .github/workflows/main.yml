@@ -107,11 +107,6 @@ jobs:
   combine_containers:
     strategy:
       matrix:
-        simd: ["AVX_256",
-               "AVX_512",
-               "AVX2_256",
-               "SSE2",
-              ]
         gromacs: ["2020.2"]
         cuda: ["10.2"]
     needs: build_container
@@ -132,9 +127,8 @@ jobs:
         docker_tag: gmx-${{matrix.gromacs}}-cuda-${{matrix.cuda}}
       run: |
         sed -i 's|gromacs/gromacs-docker|longr/gromacs-docker|g' Dockerfile
+        sed -i 's|gromacs/fftw|longr/fftw|g' Dockerfile
         docker build -t "${DOCKER_REPO}:${{env.docker_tag}}" -t "${DOCKER_REPO}:latest" -f Dockerfile .
-
-      
 
     - name: Docker Push version tag
       env:
