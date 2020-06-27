@@ -114,7 +114,7 @@ jobs:
 
     # Only combine and push to Docker Hub if we are on dev branch (TODO: master) and 
     # this is not a pull request. Skip if commit message is "ci skip"
-    if: "${{ github.event_name == 'push' && !contains(github.event.head_commit.message, 'ci skip') }}"
+    #if: "${{ github.event_name == 'push' && !contains(github.event.head_commit.message, 'ci skip') }}"
     steps:
     - uses: actions/checkout@master
 
@@ -128,6 +128,7 @@ jobs:
       run: |
         sed -i 's|gromacs/gromacs-docker|longr/gromacs-docker|g' Dockerfile
         sed -i 's|gromacs/fftw|longr/fftw|g' Dockerfile
+        cat Docker file
         docker build -t "${DOCKER_REPO}:${{env.docker_tag}}" -t "${DOCKER_REPO}:latest" -f Dockerfile .
 
     - name: Docker Push version tag
