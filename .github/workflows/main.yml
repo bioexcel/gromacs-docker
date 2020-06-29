@@ -2,8 +2,8 @@
 name: Build and push to Docker Hub
 on: [push,pull_request]
 env:
-  docker_repo: random/gromacs-docker
-  fftw_repo: "gromacs/fftw"
+  docker_repo: longr/gromacs-docker
+  fftw_repo: longr/fftw
 
 
 # Need to find a way to add in fftw location as a variable, and also to generate Dockerfile for combine in the same way.  Currently combine needs to be manually changed.
@@ -13,6 +13,7 @@ env:
 jobs:
   build_fftw_container:
     runs-on: ubuntu-18.04
+    if: "!contains(github.event.head_commit.message, 'ci skip')"
     steps:
     - uses: actions/checkout@master
 
@@ -127,7 +128,7 @@ jobs:
         docker_tag: gmx-${{matrix.gromacs}}-cuda-${{matrix.cuda}}
       run: |
         sed -i 's|gromacs/gromacs-docker|longr/gromacs-docker|g' Dockerfile
-        sed -i 's|gromacs/fftw|longr/fftw|g' Dockerfile
+        #sed -i 's|gromacs/fftw|longr/fftw|g' Dockerfile
         cat Dockerfile
         echo "${DOCKER_REPO}:${{env.docker_tag}}"
         docker build -t "${DOCKER_REPO}:${{env.docker_tag}}" -t "${DOCKER_REPO}:latest" -f Dockerfile .
