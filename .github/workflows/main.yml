@@ -22,7 +22,7 @@ jobs:
         DOCKER_REPO: ${{env.docker_repo}}
         FFTW_REPO: ${{env.fftw_repo}}
       run: |
-        sed -i 's|gromacs/fftw|${FFTW_REPO}|g' Dockerfile # Not needed. Replace w/ version
+        sed -i "s|gromacs/fftw|${FFTW_REPO}|g" Dockerfile # Not needed. Replace w/ version
         docker build -t "${DOCKER_REPO}:fftw" -f fftw/Dockerfile .
 
     - name: List containers
@@ -86,7 +86,7 @@ jobs:
         FFTW_REPO: ${{env.fftw_repo}}
         docker_tag: gmx-${{matrix.gromacs}}-cuda-${{matrix.cuda}}-${{matrix.simd}}
       run: |
-        sed -i 's|gromacs/fftw|${FFTW_REPO}|g' ${{env.docker_tag}}/Dockerfile
+        sed -i "s|gromacs/fftw|${FFTW_REPO}|g" ${{env.docker_tag}}/Dockerfile
         echo "${DOCKER_REPO}:${{env.docker_tag}}"
         docker build -t "${DOCKER_REPO}:${{env.docker_tag}}" -f ${{env.docker_tag}}/Dockerfile .
 
@@ -131,9 +131,9 @@ jobs:
         FFTW_REPO: ${{env.fftw_repo}}
         docker_tag: gmx-${{matrix.gromacs}}-cuda-${{matrix.cuda}}
       run: |
-        sed -i 's|gromacs/fftw|${FFTW_REPO}|g' Dockerfile
-        sed -i 's|gromacs/gromacs-docker|${DOCKER_REPO}|g' Dockerfile
-        #sed -i 's|gromacs/fftw|longr/fftw|g' Dockerfile
+        sed -i "s|gromacs/fftw|${FFTW_REPO}|g" Dockerfile
+        sed -i "s|gromacs/gromacs-docker|${DOCKER_REPO}|g" Dockerfile
+        #sed -i "s|gromacs/fftw|longr/fftw|g" Dockerfile
         cat Dockerfile
         echo "${DOCKER_REPO}:${{env.docker_tag}}"
         docker build -t "${DOCKER_REPO}:${{env.docker_tag}}" -t "${DOCKER_REPO}:latest" -f Dockerfile .
