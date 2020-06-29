@@ -128,14 +128,17 @@ jobs:
       run: |
         sed -i 's|gromacs/gromacs-docker|longr/gromacs-docker|g' Dockerfile
         sed -i 's|gromacs/fftw|longr/fftw|g' Dockerfile
-        cat Docker file
+        cat Dockerfile
+        echo "${DOCKER_REPO}:${{env.docker_tag}}"
         docker build -t "${DOCKER_REPO}:${{env.docker_tag}}" -t "${DOCKER_REPO}:latest" -f Dockerfile .
 
     - name: Docker Push version tag
       env:
         DOCKER_REPO: ${{env.docker_repo}}
         docker_tag: gmx-${{matrix.gromacs}}-cuda-${{matrix.cuda}}
-      run: docker push "${DOCKER_REPO}:${{env.docker_tag}}"
+      run: |
+        echo "${DOCKER_REPO}:${{env.docker_tag}}"
+        docker push "${DOCKER_REPO}:${{env.docker_tag}}"
 
     - name: Docker Push latest tag
       if: "${{ github.ref == 'master' }}"
