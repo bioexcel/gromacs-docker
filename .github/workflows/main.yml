@@ -48,14 +48,16 @@ jobs:
       if: "${{ github.event_name == 'push' }}"
       run: |
         while true;
+        echo "Here1!"
         do export DOCKER_CLI_EXPERIMENTAL=enabled
+        echo "Here2!"
         docker manifest inspect ${DOCKER_REPO}:fftw-${FFTW_VERSION} &> /dev/null
         if [ echo $? == 0 ];
-        then break;
+        then echo "Here3!"
+        break;
         fi;
         sleep 30
         done;
-        echo "Here!"
         echo docker push "${DOCKER_REPO}:fftw-${FFTW_VERSION}"
         docker push "${DOCKER_REPO}:fftw-${FFTW_VERSION}"
 
