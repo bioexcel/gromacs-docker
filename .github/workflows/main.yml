@@ -46,7 +46,9 @@ jobs:
         DOCKER_REPO: ${{env.docker_repo}}
         FFTW_VERSION: ${{env.fftw_version}}
       if: "${{ github.event_name == 'push' }}"
-      run: docker push "${DOCKER_REPO}:fftw-${FFTW_VERSION}"
+      run: |
+        docker push "${DOCKER_REPO}:fftw-${FFTW_VERSION}"
+        #sleep 60
 
       
   build_container:
@@ -144,7 +146,7 @@ jobs:
         FFTW_VERSION: ${{env.fftw_version}}
         docker_tag: gmx-${{matrix.gromacs}}-cuda-${{matrix.cuda}}
       run: |
-        sed -i "s|gromacs/fftw|${FFTW_REPO}-${FFTW_VERSION}|g" ${{env.docker_tag}}/Dockerfile
+        sed -i "s|gromacs/fftw|${FFTW_REPO}-${FFTW_VERSION}|g" Dockerfile
         sed -i "s|gromacs/gromacs-docker|${DOCKER_REPO}|g" Dockerfile
         docker build -t "${DOCKER_REPO}:${{env.docker_tag}}" -t "${DOCKER_REPO}:latest" -f Dockerfile .
 
