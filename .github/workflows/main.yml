@@ -49,12 +49,14 @@ jobs:
       run: |
         while true;
         do export DOCKER_CLI_EXPERIMENTAL=enabled
-        docker manifest inspect ${DOCKER_REPO}:${{env.docker_tag}}
+        docker manifest inspect ${DOCKER_REPO}:fftw-${FFTW_VERSION}
         if [ echo $? == 0 ];
         then break;
         fi;
         sleep 30
-        done; 
+        done;
+        echo "Here!"
+        echo docker push "${DOCKER_REPO}:fftw-${FFTW_VERSION}"
         docker push "${DOCKER_REPO}:fftw-${FFTW_VERSION}"
 
       
