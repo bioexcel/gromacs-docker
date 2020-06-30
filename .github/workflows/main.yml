@@ -47,8 +47,8 @@ jobs:
         FFTW_VERSION: ${{env.fftw_version}}
       if: "${{ github.event_name == 'push' }}"
       run: |
-        while [ true ];
-        then export DOCKER_CLI_EXPERIMENTAL=enabled
+        while true;
+        do export DOCKER_CLI_EXPERIMENTAL=enabled
         docker manifest inspect ${DOCKER_REPO}:${{env.docker_tag}}
         if [ echo $? == 0 ];
         then break;
@@ -59,6 +59,7 @@ jobs:
 
       
   build_container:
+    needs: build_fftw_container
     strategy:
       matrix:
         simd: ["AVX_256",
