@@ -48,7 +48,7 @@ jobs:
       if: "${{ github.event_name == 'push' }}"
       run: |
         docker push "${DOCKER_REPO}:fftw-${FFTW_VERSION}"
-        #sleep 60
+        sleep 60
 
       
   build_container:
