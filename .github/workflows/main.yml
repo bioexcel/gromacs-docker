@@ -117,8 +117,15 @@ jobs:
       if: "${{ github.event_name == 'push' }}"
       run: |
         echo "${DOCKER_REPO}:${{env.docker_tag}}"
-        docker push "${DOCKER_REPO}:${{env.docker_tag}}"
-
+        while [ true ];
+        then export DOCKER_CLI_EXPERIMENTAL=enabled
+        docker manifest inspect ${DOCKER_REPO}:${{env.docker_tag}}
+        if [ echo $? == 0 ];
+        then break;
+        fi;
+        sleep 30
+        done; 
+        
 
 
   # Combine all previously generated dockerfiles into one superfile.
