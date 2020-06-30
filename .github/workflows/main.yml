@@ -47,8 +47,15 @@ jobs:
         FFTW_VERSION: ${{env.fftw_version}}
       if: "${{ github.event_name == 'push' }}"
       run: |
+        while [ true ];
+        then export DOCKER_CLI_EXPERIMENTAL=enabled
+        docker manifest inspect ${DOCKER_REPO}:${{env.docker_tag}}
+        if [ echo $? == 0 ];
+        then break;
+        fi;
+        sleep 30
+        done; 
         docker push "${DOCKER_REPO}:fftw-${FFTW_VERSION}"
-        sleep 60
 
       
   build_container:
@@ -116,17 +123,7 @@ jobs:
         docker_tag: gmx-${{matrix.gromacs}}-cuda-${{matrix.cuda}}-${{matrix.simd}}
       if: "${{ github.event_name == 'push' }}"
       run: |
-        echo "${DOCKER_REPO}:${{env.docker_tag}}"
-        while [ true ];
-        then export DOCKER_CLI_EXPERIMENTAL=enabled
-        docker manifest inspect ${DOCKER_REPO}:${{env.docker_tag}}
-        if [ echo $? == 0 ];
-        then break;
-        fi;
-        sleep 30
-        done; 
-        
-
+        docker push "${DOCKER_REPO}:${{env.docker_tag}}"
 
   # Combine all previously generated dockerfiles into one superfile.
   combine_containers:
