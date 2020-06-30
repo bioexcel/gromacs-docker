@@ -10,9 +10,14 @@ env:
 
 # Need to find a way to add in fftw location as a variable, and also to generate Dockerfile for combine in the same way.  Currently combine needs to be manually changed.
 # Set the Dockerfile to take no input as gromacs/docker  JUST USE SED!!!
-
-  
 jobs:
+  show:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Is variable exported?
+        run: |
+          echo "${{ env.fftw_repo }}"
+
   build_fftw_container:
     runs-on: ubuntu-18.04
     if: "!contains(github.event.head_commit.message, 'ci skip')"
@@ -28,7 +33,7 @@ jobs:
       run: |
         sed -i "s|3.3.8|${FFTW_VERSION}|g" fftw/Dockerfile
         sed -i "s|8aac833c943d8e90d51b697b27d4384d|${FFTW_MD5}|g" fftw/Dockerfile
-        docker build -t "${DOCKER_REPO}:fftw" -f fftw/Dockerfile .
+        docker build -t "${DOCKER_REPO}:fftw-${FFTW_VERSION}" -f fftw/Dockerfile .
 
     - name: List containers
       run: docker ps
