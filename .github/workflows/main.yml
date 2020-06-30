@@ -49,7 +49,7 @@ jobs:
       run: |
         while true;
         do export DOCKER_CLI_EXPERIMENTAL=enabled
-        docker manifest inspect ${DOCKER_REPO}:fftw-${FFTW_VERSION}
+        docker manifest inspect ${DOCKER_REPO}:fftw-${FFTW_VERSION} &> /dev/null
         if [ echo $? == 0 ];
         then break;
         fi;
