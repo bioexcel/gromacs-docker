@@ -4,6 +4,8 @@ on: [push,pull_request]
 env:
   docker_repo: longr/gromacs-docker
   fftw_repo: longr/gromacs-docker:fftw
+  fftw_version: 3.3.8
+  fftw_md5: 8aac833c943d8e90d51b697b27d4384d
 
 
 # Need to find a way to add in fftw location as a variable, and also to generate Dockerfile for combine in the same way.  Currently combine needs to be manually changed.
@@ -21,8 +23,11 @@ jobs:
       env:
         DOCKER_REPO: ${{env.docker_repo}}
         FFTW_REPO: ${{env.fftw_repo}}
+        FFTW_VERSION: ${{env.fftw_version}}
+        FFTW_MD5: ${{env.fftw_md5}}
       run: |
-        sed -i "s|gromacs/fftw|${FFTW_REPO}|g" Dockerfile # Not needed. Replace w/ version
+        sed -i "s|3.3.8|${FFTW_VERSION}|g" fftw/Dockerfile
+        sed -i "s|8aac833c943d8e90d51b697b27d4384d|${FFTW_MD5}|g" fftw/Dockerfile
         docker build -t "${DOCKER_REPO}:fftw" -f fftw/Dockerfile .
 
     - name: List containers
@@ -34,9 +39,11 @@ jobs:
     - name: Docker Push
       env:
         DOCKER_REPO: ${{env.docker_repo}}
+        FFTW_VERSION: ${{env.fftw_version}}
       if: "${{ github.event_name == 'push' }}"
-      run: docker push "${DOCKER_REPO}:fftw"
-    
+      run: docker push "${DOCKER_REPO}:fftw-${FFTW_VERSION}"
+
+      
   build_container:
     strategy:
       matrix:
@@ -84,10 +91,10 @@ jobs:
       env:
         DOCKER_REPO: ${{env.docker_repo}}
         FFTW_REPO: ${{env.fftw_repo}}
+        FFTW_VERSION: ${{env.fftw_version}}
         docker_tag: gmx-${{matrix.gromacs}}-cuda-${{matrix.cuda}}-${{matrix.simd}}
       run: |
-        sed -i "s|gromacs/fftw|${FFTW_REPO}|g" ${{env.docker_tag}}/Dockerfile
-        echo "${DOCKER_REPO}:${{env.docker_tag}}"
+        sed -i "s|gromacs/fftw|${FFTW_REPO}-${FFTW_VERSION}|g" ${{env.docker_tag}}/Dockerfile
         docker build -t "${DOCKER_REPO}:${{env.docker_tag}}" -f ${{env.docker_tag}}/Dockerfile .
 
     - name: List containers
@@ -129,13 +136,11 @@ jobs:
       env:
         DOCKER_REPO: ${{env.docker_repo}}
         FFTW_REPO: ${{env.fftw_repo}}
+        FFTW_VERSION: ${{env.fftw_version}}
         docker_tag: gmx-${{matrix.gromacs}}-cuda-${{matrix.cuda}}
       run: |
-        sed -i "s|gromacs/fftw|${FFTW_REPO}|g" Dockerfile
+        sed -i "s|gromacs/fftw|${FFTW_REPO}-${FFTW_VERSION}|g" ${{env.docker_tag}}/Dockerfile
         sed -i "s|gromacs/gromacs-docker|${DOCKER_REPO}|g" Dockerfile
-        #sed -i "s|gromacs/fftw|longr/fftw|g" Dockerfile
-        cat Dockerfile
-        echo "${DOCKER_REPO}:${{env.docker_tag}}"
         docker build -t "${DOCKER_REPO}:${{env.docker_tag}}" -t "${DOCKER_REPO}:latest" -f Dockerfile .
 
     - name: Docker Push version tag
@@ -143,11 +148,10 @@ jobs:
         DOCKER_REPO: ${{env.docker_repo}}
         docker_tag: gmx-${{matrix.gromacs}}-cuda-${{matrix.cuda}}
       run: |
-        echo "${DOCKER_REPO}:${{env.docker_tag}}"
         docker push "${DOCKER_REPO}:${{env.docker_tag}}"
 
     - name: Docker Push latest tag
-      if: "${{ github.ref == 'master' }}"
+      if: github.ref == 'master' || github.repository != 'bioexcel/gromacs-docker'
       env:
         DOCKER_REPO: ${{env.docker_repo}}
       run: docker push "${DOCKER_REPO}:latest"
