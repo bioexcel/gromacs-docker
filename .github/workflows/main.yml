@@ -29,7 +29,7 @@ jobs:
       run: |
         for type in ${{env.additional_simd_types}}
         do
-            sed -i "s/GROMACS configurations/a COPY --from=gromacs/gromacs-docker:gmx-2020.2-cuda-10.2-$type     /gromacs /gromacs
+            sed -i "s|GROMACS configurations|a COPY --from=gromacs/gromacs-docker:gmx-2020.2-cuda-10.2-$type     /gromacs /gromacs|g" Dockerfile
         done
         cat Dockerfile
   
