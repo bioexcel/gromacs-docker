@@ -27,7 +27,7 @@ jobs:
     - uses: actions/checkout@master
     - name: Test loop
       run: |
-        for type in ${{additional_simd_types}}
+        for type in ${{env.additional_simd_types}}
         do
             sed -i "s/GROMACS configurations/a COPY --from=gromacs/gromacs-docker:gmx-2020.2-cuda-10.2-$type     /gromacs /gromacs
         done
@@ -45,7 +45,7 @@ jobs:
     # add additional simd_types
     - name: Set FFTW version
       run: |
-        sed -i "s|--enable-float|& ${{additional_simd_types}}|g"
+        sed -i "s|--enable-float|& ${{env.additional_simd_types}}|g"
         sed -i "s|3.3.8|${{env.fftw_version}}|g" fftw/Dockerfile
         sed -i "s|8aac833c943d8e90d51b697b27d4384d|${{env.fftw_md5}}|g" fftw/Dockerfile
 
