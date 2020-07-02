@@ -12,9 +12,27 @@ env:
   # fftw_md5:      The md5 of the lib-fftw version we want as it is
   #                downloaded in the build stage
   fftw_md5: 8aac833c943d8e90d51b697b27d4384d
-
+  # additional_simd_types:   This is where you need to specify any
+  #                          SIMD types that will be needed beyond
+  #                          the basic 4 of avx_256, avx_512,
+  #                          and avx2_256, sse2. Not setting this
+  #                          results in fftw not being optimised
+  #                          for all types
+  additional_simd_types: "SSE2 AXV2_256"
+  
 jobs:
-
+  show:
+    runs-on: ubuntu-18.04
+    steps:
+    - uses: actions/checkout@master
+    - name: Test loop
+      run: |
+        for type in ${{additional_simd_types}}
+        do
+            sed -i "s/GROMACS configurations/a COPY --from=gromacs/gromacs-docker:gmx-2020.2-cuda-10.2-$type     /gromacs /gromacs
+        done
+        cat Dockerfile
+  
   # Build the container for the optimised lib-fftw.  This saves us
   # building it again in each SIMD type.
   build_fftw_container:
@@ -23,9 +41,11 @@ jobs:
     steps:
     - uses: actions/checkout@master
 
-    # Change fftw version to one specified at the beginning 
+    # Change fftw version to one specified at the beginning and
+    # add additional simd_types
     - name: Set FFTW version
       run: |
+        sed -i "s|--enable-float|& ${{additional_simd_types}}|g"
         sed -i "s|3.3.8|${{env.fftw_version}}|g" fftw/Dockerfile
         sed -i "s|8aac833c943d8e90d51b697b27d4384d|${{env.fftw_md5}}|g" fftw/Dockerfile
 
@@ -43,9 +63,11 @@ jobs:
         sleep 60 # Needed to give pause before trying to download image
 
   # Build the multiple optimised containers containing gromacs.
-  # SIMD types can be specified in the list.  Multiple gromacs
-  # and CUDA versions can be specified as well.  These will
-  # need to specified in the final job as well.
+  # SIMD types can be specified in the list, but any additional
+  # types beyond avx_256, avx_512, avx2_256, sse2 must be added to
+  # the variable `additional_simd_types` specified at the top of
+  # this file.  Multiple gromacs and CUDA versions can be specified
+  # as well.  These will need to specified in the final job as well.
   # These will be built in parallel
   build_subcontainer:
     needs: build_fftw_container
