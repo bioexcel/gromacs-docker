@@ -25,7 +25,7 @@ jobs:
 
     # Change fftw version to one specified at the beginning 
     -name: Set FFTW version
-      run: |
+     run: |
         sed -i "s|3.3.8|${{env.fftw_version}}|g" fftw/Dockerfile
         sed -i "s|8aac833c943d8e90d51b697b27d4384d|${{env.fftw_md5}}|g" fftw/Dockerfile
 
