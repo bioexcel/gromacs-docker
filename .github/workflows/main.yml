@@ -69,7 +69,7 @@ jobs:
                "AVX2_256",
                "SSE2",
               ]
-        gromacs: ["2020.2"]
+        gromacs: ["2020.3"]
         cuda: ["10.2"]
     runs-on: ubuntu-18.04
 
@@ -121,7 +121,7 @@ jobs:
   build_final_container:
     strategy:
       matrix:
-        gromacs: ["2020.2"]
+        gromacs: ["2020.3"]
         cuda: ["10.2"]
     needs: build_subcontainer
     runs-on: ubuntu-18.04
@@ -138,7 +138,7 @@ jobs:
         sed -i "s|gromacs/gromacs-docker|${{env.docker_repo}}|g" Dockerfile
         for type in ${{env.additional_simd_types}}
         do
-            sed -i "s|GROMACS configurations|a COPY --from=gromacs/gromacs-docker:gmx-2020.2-cuda-10.2-$type     /gromacs /gromacs|g" Dockerfile
+            sed -i "s|GROMACS configurations|a COPY --from=gromacs/gromacs-docker:gmx-2020.3-cuda-10.2-$type     /gromacs /gromacs|g" Dockerfile
         done
 
     - name: Build the combined Docker image
