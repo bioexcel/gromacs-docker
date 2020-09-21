@@ -1,18 +1,86 @@
 ---
-name: Test
+name: Build and push to Docker Hub
 on: [push,pull_request]
+env:
+  # docker_repo:   This must be changed between forks.  This should be the
+  #                dockerhub repository you will be using to register the
+  #                docker containers to.
+  docker_repo: gromacs/gromacs
+  # fftw_version:  This is the version of lib-fftw we would like to
+  #                compile and create a docker container for
+  fftw_version: 3.3.8
+  # fftw_md5:      The md5 of the lib-fftw version we want as it is
+  #                downloaded in the build stage
+  fftw_md5: 8aac833c943d8e90d51b697b27d4384d
+  # additional_simd_types:   This is where you need to specify any
+  #                          SIMD types that will be needed beyond
+  #                          the basic 4 of avx_256, avx_512,
+  #                          and avx2_256, sse2. Not setting this
+  #                          results in fftw not being optimised
+  #                          for all types
+  additional_simd_types: "SSE2 AXV2"
+  
 jobs:
-  # Initialisation job. This will setup python and run build-all-docker.sh to
-  # generate all the needed Dockerfiles.
-  build_files:
-    runs-on: ubuntu-latest
+  # Build the container for the optimised lib-fftw.  This saves us
+  # building it again in each SIMD type.
+  build_fftw_container:
+    runs-on: ubuntu-18.04
+    if: "!contains(github.event.head_commit.message, 'ci skip')"
+    steps:
+    - uses: actions/checkout@master
+
+    # Change fftw version to one specified at the beginning and
+    # add additional simd_types
+    - name: Set FFTW version
+      run: |
+        for type in ${{env.additional_simd_types}}
+        do
+          sed -i "s|--enable-float|& --enable-$type|g" fftw/Dockerfile
+        done
+        sed -i "s|3.3.8|${{env.fftw_version}}|g" fftw/Dockerfile
+        sed -i "s|8aac833c943d8e90d51b697b27d4384d|${{env.fftw_md5}}|g" fftw/Dockerfile
+
+    - name: Build the Docker image
+      run: |
+        docker build -t "${{env.docker_repo}}:fftw-${{env.fftw_version}}" -f fftw/Dockerfile .
+
+    - name: Docker Login
+      run: docker login -u ${{secrets.DOCKER_USERNAME}} -p ${{secrets.DOCKER_PASSWORD}}
+
+    - name: Docker Push
+      if: "${{ github.event_name == 'push' }}"
+      run: |
+        docker push "${{env.docker_repo}}:fftw-${{env.fftw_version}}"
+        sleep 60 # Needed to give pause before trying to download image
+
+  # Build the multiple optimised containers containing gromacs.
+  # SIMD types can be specified in the list, but any additional
+  # types beyond avx_256, avx_512, avx2_256, sse2 must be added to
+  # the variable `additional_simd_types` specified at the top of
+  # this file.  Multiple gromacs and CUDA versions can be specified
+  # as well.  These will need to specified in the final job as well.
+  # These will be built in parallel
+  build_subcontainer:
+    needs: build_fftw_container
+    strategy:
+      matrix:
+        simd: ["AVX_256",
+               "AVX_512",
+               "AVX2_256",
+               "SSE2",
+              ]
+        gromacs: ["2020.3"]
+        cuda: ["10.2"]
+    runs-on: ubuntu-18.04
+
     if: "!contains(github.event.head_commit.message, 'ci skip')"
     steps:
     - uses: actions/checkout@master
     - uses: actions/setup-python@v1
       with:
         python-version: "3.7"
-    - name: Install dependencies
+
+    - name: Install python dependencies
       run: |
         set -xe
         python -VV
@@ -20,67 +88,75 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install hpccm
 
+   # The Dockerfiles must be generated based on SIMD type, Gromacs
+   # version and CUDA version
     - name: Generate Dockerfiles
-      run: bash build-all-dockerfiles.sh
-
-    - name: Upload dockerfiles
-      uses: actions/upload-artifact@v2
-      with:
-        name: dockerfiles
-        path: "gmx-*"
-        
-  # Build each Docker container from the relevant files.  The Dockerfile
-  # directories need to be added manualy for each gromacs and cuda version,
-  # simd type - perhaps move to variables and for loops in the future?
-  # These are then registered on dockerhub for combining later.
-  # FUTURE:  Register as artifacts instead of on dockerhub?
-  build:
-    needs: build_files
-    strategy:
-      matrix:
-        simd: ["gmx-2020.2-cuda-10.2-AVX_256",
-               "gmx-2020.2-cuda-10.2-AVX_512",
-               "gmx-2020.2-cuda-10.2-AVX2_256",
-               "gmx-2020.2-cuda-10.2-SSE2",
-              ]
-    runs-on: ubuntu-latest
-    if: "!contains(github.event.head_commit.message, 'ci skip')"
-    steps:
-    - uses: actions/checkout@master
-
-    - name: Download Dockerfiles
-      uses: actions/download-artifact@v2
-      with:
-        name: dockerfiles
+      env:
+        docker_tag: gmx-${{matrix.gromacs}}-cuda-${{matrix.cuda}}-${{matrix.simd}}
+      run: |
+        mkdir -p ${{env.docker_tag}}
+        python3 build-dockerfiles.py --simd ${{matrix.simd}} --gcc 8 --cuda ${{matrix.cuda}} --version ${{matrix.gromacs}} --format docker > ${{env.docker_tag}}/Dockerfile
 
     - name: Build the Docker image
-      run: docker build -t "longr/gromacs-docker:${{matrix.simd}}" -f ${{matrix.simd}}/Dockerfile .
+      env:
+        docker_tag: gmx-${{matrix.gromacs}}-cuda-${{matrix.cuda}}-${{matrix.simd}}
+      run: |
+        sed -i "s|gromacs/fftw|${{env.docker_repo}}:fftw-${{env.fftw_version}}|g" ${{env.docker_tag}}/Dockerfile
+        docker build -t "${{env.docker_repo}}:${{env.docker_tag}}" -f ${{env.docker_tag}}/Dockerfile .
 
-    - name: List containers
-      run: docker ps
-      
     - name: Docker Login
       run: docker login -u ${{secrets.DOCKER_USERNAME}} -p ${{secrets.DOCKER_PASSWORD}}
 
     - name: Docker Push
-      run: docker push "longr/gromacs-docker:${{matrix.simd}}"
+      env:
+        docker_tag: gmx-${{matrix.gromacs}}-cuda-${{matrix.cuda}}-${{matrix.simd}}
+      if: "${{ github.event_name == 'push' }}"
+      run: |
+        docker push "${{env.docker_repo}}:${{env.docker_tag}}"
 
+  # Combine all subcontainers into a single container.
+  # If you specified multiple CUDA or gromacs versions, or
+  # you changed them you need to set these below
+  # 
+  build_final_container:
+    strategy:
+      matrix:
+        gromacs: ["2020.3"]
+        cuda: ["10.2"]
+    needs: build_subcontainer
+    runs-on: ubuntu-18.04
 
-  # Combine all previously generated dockerfiles into one superfile.
-  combine:
-    needs: build
-    runs-on: ubuntu-latest
-    if: "!contains(github.event.head_commit.message, 'ci skip')"
+    # Only combine and push to Docker Hub if we are on dev branch (TODO: master) and 
+    # this is not a pull request. Skip if commit message is "ci skip"
+    #if: "${{ github.event_name == 'push' && !contains(github.event.head_commit.message, 'ci skip') }}"
     steps:
     - uses: actions/checkout@master
-    - name: Build the Docker image
-      run: docker build -t "longr/gromacs-docker:gmx-2020.2-cuda-10.2" -t "longr/gromacs-docker:latest" -f Dockerfile .
-      
+
+    - name: Customise Dockerfile
+      run: |
+        sed -i "s|gromacs/fftw|${{env.docker_repo}}:fftw-${{env.fftw_version}}|g" Dockerfile
+        sed -i "s|gromacs/gromacs-docker|${{env.docker_repo}}|g" Dockerfile
+        for type in ${{env.additional_simd_types}}
+        do
+            sed -i "s|GROMACS configurations|a COPY --from=gromacs/gromacs-docker:gmx-2020.3-cuda-10.2-$type     /gromacs /gromacs|g" Dockerfile
+        done
+
+    - name: Build the combined Docker image
+      env:
+        docker_tag: gmx-${{matrix.gromacs}}-cuda-${{matrix.cuda}}
+      run:        
+        docker build -t "${{env.docker_repo}}:${{env.docker_tag}}" -t "${{env.docker_repo}}:latest" -f Dockerfile .
+
     - name: Docker Login
       run: docker login -u ${{secrets.DOCKER_USERNAME}} -p ${{secrets.DOCKER_PASSWORD}}
 
     - name: Docker Push version tag
-      run: docker push "longr/gromacs-docker:gmx-2020.2-cuda-10.2"
+      env:
+        docker_tag: gmx-${{matrix.gromacs}}-cuda-${{matrix.cuda}}
+      run: |
+        docker push "${{env.docker_repo}}:${{env.docker_tag}}"
 
     - name: Docker Push latest tag
-      run: docker push "longr/gromacs-docker:latest"
+      if: github.ref == 'master' || github.repository != 'bioexcel/gromacs-docker'
+      run: docker push "${{env.docker_repo}}:latest"
+

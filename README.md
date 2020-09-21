@@ -76,24 +76,29 @@ Contributions welcome! Please fork this repository and submit a pull request to 
 
 The source code for GROMACS is available from http://manual.gromacs.org/current/download and is maintained at https://github.com/gromacs/gromacs
 
+### Building the containers
+
+All of the containers are built by GitHub actions.  This is done in a three part process.
+
+ - Build a container with optimised FFTW in.
+ - Build containers with emacs optimised for each SIMD type and/or gromacs version
+ - Build a container for each gromacs version that includes all containers built\
+ in the previous step
+
+This will require you to have an account on Dockerhub, and to have setup a PAT that you have then told Github about.  The main part that then needs changing is the dockerhub repository in the workflow file: `.github/workflow/main.yml`
+
+### Bumping the version of gromacs, cuda or SIMD types
+
+To change the version of gromacs or CUDA, you just need to change the variables in the workflow file: `.github/workflow/main.yml`
+
+To change the SIMD types requires you to update the build matrix in workflow file and add them to the `additoon_simd_types` in the workflow file.
+
 ### CI Workflow and how the container is built
-The container image is generated through a series of setups by the CI system.
 
 - `build-all-dockerfiles.sh` calls `build-dockerfiles.py` once for each simd-type specified in the array 'simd_types'.
 - `build-dockerfiles.py` generates a dockerfile based on several variables, such as GROMACS version, CUDA version and SIMD type. This is stored in a directory named `gmx-<gromacs_version>-cuda-<cuda_version>-<simd_type>`.
-- github actions will build all the dockerfiles in parallel and register them to dockerhub.
-- The final steps combine all the dockerfiles into one and register the output to dockerhub.
-
-This container image is made by building multiple container images for each of the simd-types requested. These are then combined into one container by a final dockerfile which is called "Dockerfile" and is kept in the root of the repository.
-
-### Changing the gromacs or cuda version.
-
-To bump the gromacs version used in the container, a few changes need to be made in a couple of files.
-
-- `build-all-dockerfiles.sh` - The gromacs and docker versions are defined in variables at the top of this file and need to be changed as needed.
-- `.github/workflows/main.yml` - This is the CI file. At the minute there are four instances of the gromacs and cuda versions that need to be changed in here.  They are imbedded into the tags for the docker containers and are located in the `simd` array.  The versions then need to be changed in the final tags at the end.
-- `Dockerfile` - This is the main dockerfile that combines everything together. The tags that were changed in the CI file need to be updated in here as well.  Additionally for CUDA, the version needs to be changed in the first `FROM` line at the beginning of the file.
-
+- `fftw/Dockerfile` will build an optimised version of lib-fftw in a container.
+- `Dockerfile` will build the single combined container
 
 ## Contact us
 
