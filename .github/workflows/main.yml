@@ -5,14 +5,14 @@ env:
   # docker_repo:   This must be changed between forks.  This should be the
   #                dockerhub repository you will be using to register the
   #                docker containers to.
-  docker_repo: gromacs/gromacs
+  docker_repo: longr/gromacs-docker
   # fftw_version:  This is the version of lib-fftw we would like to
   #                compile and create a docker container for
   fftw: 3.3.8
   # fftw_md5:      The md5 of the lib-fftw version we want as it is
   #                downloaded in the build stage
   fftw_md5: 8aac833c943d8e90d51b697b27d4384d
-  gromacs: 2020.3
+  gromacs: 2020.2
   cmake: 3.17.1
   gcc: 9
   cuda: 10.1
@@ -30,48 +30,8 @@ env:
   additional_simd_types: "SSE2 AXV2"
   
 jobs:
-  # Build the container for the optimised lib-fftw.  This saves us
-  # building it again in each SIMD type.
-  build_fftw_container:
-    runs-on: ubuntu-18.04
-    if: "!contains(github.event.head_commit.message, 'ci skip')"
-    steps:
-    - uses: actions/checkout@master
-
-    # Change fftw version as required
-    # Delete all simd types and insert required ones
-    - name: Set FFTW version
-      run: |
-        sed -s "|--enable-sse2 --enable-avx --enable-avx2 --enable-avx512||g" fftw/Dockerfile
-        for type in ${{env.simd}}
-        do
-          sed -i "s|--enable-float|& --enable-$type|g" fftw/Dockerfile
-        done
-        sed -i "s|3.3.8|${{env.fftw_version}}|g" fftw/Dockerfile
-        sed -i "s|8aac833c943d8e90d51b697b27d4384d|${{env.fftw_md5}}|g" fftw/Dockerfile
-
-    - name: Build the Docker image
-      run: |
-        docker build -t "${{env.docker_repo}}:fftw-${{env.fftw}}" -f fftw/Dockerfile .
-
-    - name: Docker Login
-      run: docker login -u ${{secrets.DOCKER_USERNAME}} -p ${{secrets.DOCKER_PASSWORD}}
-
-    - name: Docker Push
-      if: "${{ github.event_name == 'push' }}"
-      run: |
-        docker push "${{env.docker_repo}}:fftw-${{env.fftw}}"
-        sleep 60 # Needed to give pause before trying to download image
-
-  # Build the multiple optimised containers containing gromacs.
-  # SIMD types can be specified in the list, but any additional
-  # types beyond avx_256, avx_512, avx2_256, sse2 must be added to
-  # the variable `additional_simd_types` specified at the top of
-  # this file.  Multiple gromacs and CUDA versions can be specified
-  # as well.  These will need to specified in the final job as well.
-  # These will be built in parallel
   build_subcontainer:
-    needs: build_fftw_container
+    #needs: build_fftw_container
     strategy:
       matrix:
         simd: ["AVX_256",
@@ -79,8 +39,6 @@ jobs:
                "AVX2_256",
                "SSE2",
               ]
-        gromacs: ["2020.3"]
-        cuda: ["10.2"]
         ubuntu: ["18.04"]
     runs-on: ubuntu-${{matrix.ubuntu}}
 
@@ -118,15 +76,13 @@ jobs:
         --openmpi ${{env.openmpi}}\
         --regtest\
         --fftw ${{env.fftw}}\
-        > Dockerfile
-
-        #python3 build-dockerfiles.py --simd ${{matrix.simd}} --gcc 8 --cuda ${{matrix.cuda}} --version ${{matrix.gromacs}} --format docker > ${{env.docker_tag}}/Dockerfile
+        > ${{env.docker_tag}}/Dockerfile
 
     - name: Build the Docker image
       env:
-        docker_tag: gmx-${{matrix.gromacs}}-cuda-${{matrix.cuda}}-${{matrix.simd}}
+        docker_tag: gmx-${{env.gromacs}}-cuda-${{env.cuda}}-${{matrix.simd}}
       run: |
-        sed -i "s|gromacs/fftw|${{env.docker_repo}}:fftw-${{env.fftw_version}}|g" ${{env.docker_tag}}/Dockerfile
+        #sed -i "s|gromacs/fftw|${{env.docker_repo}}:fftw-${{env.fftw_version}}|g" ${{env.docker_tag}}/Dockerfile
         docker build -t "${{env.docker_repo}}:${{env.docker_tag}}" -f ${{env.docker_tag}}/Dockerfile .
 
     - name: Docker Login
@@ -134,7 +90,7 @@ jobs:
 
     - name: Docker Push
       env:
-        docker_tag: gmx-${{matrix.gromacs}}-cuda-${{matrix.cuda}}-${{matrix.simd}}
+        docker_tag: gmx-${{env.gromacs}}-cuda-${{env.cuda}}-${{matrix.simd}}
       if: "${{ github.event_name == 'push' }}"
       run: |
         docker push "${{env.docker_repo}}:${{env.docker_tag}}"
@@ -144,10 +100,6 @@ jobs:
   # you changed them you need to set these below
   # 
   build_final_container:
-    strategy:
-      matrix:
-        gromacs: ["2020.3"]
-        cuda: ["10.2"]
     needs: build_subcontainer
     runs-on: ubuntu-18.04
 
@@ -168,7 +120,7 @@ jobs:
 
     - name: Build the combined Docker image
       env:
-        docker_tag: gmx-${{matrix.gromacs}}-cuda-${{matrix.cuda}}
+        docker_tag: gmx-${{env.gromacs}}-cuda-${{env.cuda}}
       run:        
         docker build -t "${{env.docker_repo}}:${{env.docker_tag}}" -t "${{env.docker_repo}}:latest" -f Dockerfile .
 
@@ -177,7 +129,7 @@ jobs:
 
     - name: Docker Push version tag
       env:
-        docker_tag: gmx-${{matrix.gromacs}}-cuda-${{matrix.cuda}}
+        docker_tag: gmx-${{env.gromacs}}-cuda-${{env.cuda}}
       run: |
         docker push "${{env.docker_repo}}:${{env.docker_tag}}"
 

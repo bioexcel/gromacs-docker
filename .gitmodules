@@ -1,0 +1,3 @@
+[submodule "gromacs-hpccm-recipes-mult-stages"]
+	path = gromacs-hpccm-recipes-mult-stages
+	url = https://github.com/bioexcel/gromacs-hpccm-recipes-mult-stages
