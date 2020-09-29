@@ -34,10 +34,10 @@ jobs:
     #needs: build_fftw_container
     strategy:
       matrix:
-        simd: ["AVX_256",
-               "AVX_512",
-               "AVX2_256",
-               "SSE2",
+        simd: ["avx_512f",
+               "avx2",
+               "avx",
+               "sse2",
               ]
         ubuntu: ["18.04"]
     runs-on: ubuntu-${{matrix.ubuntu}}
