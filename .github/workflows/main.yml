@@ -37,7 +37,7 @@ jobs:
         simd: ["avx_512f",
                "avx2",
                "avx",
-               "sse2",
+               "sse2:rdtscp=off",
               ]
         ubuntu: ["18.04"]
     runs-on: ubuntu-${{matrix.ubuntu}}
