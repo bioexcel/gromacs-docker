@@ -34,9 +34,9 @@ jobs:
     #needs: build_fftw_container
     strategy:
       matrix:
-        simd: ["avx_512f",
-               "avx2",
-               "avx",
+        simd: ["avx_512f:rdtscp=off",
+               "avx2:rdtscp=off",
+               "avx:rdtscp=off",
                "sse2:rdtscp=off",
               ]
         ubuntu: ["18.04"]
