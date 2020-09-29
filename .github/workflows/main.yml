@@ -36,7 +36,7 @@ jobs:
       matrix:
         simd: ["avx_512f",
                "avx2",
-               "avx"
+               "avx",
                "sse2",
               ]
         ubuntu: ["18.04"]
