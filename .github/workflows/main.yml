@@ -69,7 +69,8 @@ jobs:
         mkdir -p ${{env.docker_tag}}
         pwd
         ls
-        
+        ls gromacs-hpccm-recipes-mult-stages
+        ls gromacs-hpccm-recipes-mult-stages/generate_specifications_file.py
         python3 gromacs-hpccm-recipes-mult-stages/generate_specifications_file.py\
         --format docker\
         --gromacs ${{env.gromacs}}\
