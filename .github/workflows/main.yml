@@ -67,21 +67,17 @@ jobs:
       run: |
         
         mkdir -p ${{env.docker_tag}}
-        pwd
-        ls
-        ls gromacs-hpccm-recipes-mult-stages
-        ls gromacs-hpccm-recipes-mult-stages/generate_specifications_file.py
-        python3 gromacs-hpccm-recipes-mult-stages/generate_specifications_file.py\
-        --format docker\
-        --gromacs ${{env.gromacs}}\
-        --ubuntu ${{matrix.ubuntu}}\
-        --gcc ${{env.gcc}}9\
-        --cmake ${{env.cmake}}\
-        --engines simd=${{matrix.simd}}\
-        rdtscp=on\
-        --openmpi ${{env.openmpi}}\
-        --regtest\
-        --fftw ${{env.fftw}}\
+        python3 gromacs-hpccm-recipes-mult-stages/generate_specifications_file.py \
+        --format docker \
+        --gromacs ${{env.gromacs}} \
+        --ubuntu ${{matrix.ubuntu}} \
+        --gcc ${{env.gcc}} \
+        --cmake ${{env.cmake}} \
+        --engines simd=${{matrix.simd}} \
+        --rdtscp=on \
+        --openmpi ${{env.openmpi}} \
+        --regtest \
+        --fftw ${{env.fftw}} \
         > ${{env.docker_tag}}/Dockerfile
 
     - name: Build the Docker image
