@@ -8,10 +8,19 @@ env:
   docker_repo: gromacs/gromacs
   # fftw_version:  This is the version of lib-fftw we would like to
   #                compile and create a docker container for
-  fftw_version: 3.3.8
+  fftw: 3.3.8
   # fftw_md5:      The md5 of the lib-fftw version we want as it is
   #                downloaded in the build stage
   fftw_md5: 8aac833c943d8e90d51b697b27d4384d
+  gromacs: 2020.3
+  cmake: 3.17.1
+  gcc: 9
+  cuda: 10.1
+  openmpi: 4.0.0
+  ubuntu: 18.04
+  simd: 'avx_512f avx2 avx sse2'
+  
+
   # additional_simd_types:   This is where you need to specify any
   #                          SIMD types that will be needed beyond
   #                          the basic 4 of avx_256, avx_512,
@@ -29,11 +38,12 @@ jobs:
     steps:
     - uses: actions/checkout@master
 
-    # Change fftw version to one specified at the beginning and
-    # add additional simd_types
+    # Change fftw version as required
+    # Delete all simd types and insert required ones
     - name: Set FFTW version
       run: |
-        for type in ${{env.additional_simd_types}}
+        sed -s "|--enable-sse2 --enable-avx --enable-avx2 --enable-avx512||g" fftw/Dockerfile
+        for type in ${{env.simd}}
         do
           sed -i "s|--enable-float|& --enable-$type|g" fftw/Dockerfile
         done
@@ -42,7 +52,7 @@ jobs:
 
     - name: Build the Docker image
       run: |
-        docker build -t "${{env.docker_repo}}:fftw-${{env.fftw_version}}" -f fftw/Dockerfile .
+        docker build -t "${{env.docker_repo}}:fftw-${{env.fftw}}" -f fftw/Dockerfile .
 
     - name: Docker Login
       run: docker login -u ${{secrets.DOCKER_USERNAME}} -p ${{secrets.DOCKER_PASSWORD}}
@@ -50,7 +60,7 @@ jobs:
     - name: Docker Push
       if: "${{ github.event_name == 'push' }}"
       run: |
-        docker push "${{env.docker_repo}}:fftw-${{env.fftw_version}}"
+        docker push "${{env.docker_repo}}:fftw-${{env.fftw}}"
         sleep 60 # Needed to give pause before trying to download image
 
   # Build the multiple optimised containers containing gromacs.
@@ -71,7 +81,8 @@ jobs:
               ]
         gromacs: ["2020.3"]
         cuda: ["10.2"]
-    runs-on: ubuntu-18.04
+        ubuntu: ["18.04"]
+    runs-on: ubuntu-${{matrix.ubuntu}}
 
     if: "!contains(github.event.head_commit.message, 'ci skip')"
     steps:
@@ -92,10 +103,24 @@ jobs:
    # version and CUDA version
     - name: Generate Dockerfiles
       env:
-        docker_tag: gmx-${{matrix.gromacs}}-cuda-${{matrix.cuda}}-${{matrix.simd}}
+        docker_tag: gmx-${{env.gromacs}}-cuda-${{env.cuda}}-${{matrix.simd}}
       run: |
+        
         mkdir -p ${{env.docker_tag}}
-        python3 build-dockerfiles.py --simd ${{matrix.simd}} --gcc 8 --cuda ${{matrix.cuda}} --version ${{matrix.gromacs}} --format docker > ${{env.docker_tag}}/Dockerfile
+        pyton3 gromacs-hpccm-recipes-mult-stages/generate_specifications_file.py\
+        --format docker\
+        --gromacs ${{env.gromacs}}\
+        --ubuntu ${{matrix.ubuntu}}\
+        --gcc ${{env.gcc}}9\
+        --cmake ${{env.cmake}}\
+        --engines simd=${{matrix.simd}}\
+        rdtscp=on\
+        --openmpi ${{env.openmpi}}\
+        --regtest\
+        --fftw ${{env.fftw}}\
+        > Dockerfile
+
+        #python3 build-dockerfiles.py --simd ${{matrix.simd}} --gcc 8 --cuda ${{matrix.cuda}} --version ${{matrix.gromacs}} --format docker > ${{env.docker_tag}}/Dockerfile
 
     - name: Build the Docker image
       env:
