@@ -19,7 +19,7 @@ env:
   openmpi: 4.0.0
   ubuntu: 18.04
   simd: 'avx_512f avx2 avx sse2:rdtscp=off'
-  
+  rdtscp: off
 
   # additional_simd_types:   This is where you need to specify any
   #                          SIMD types that will be needed beyond
@@ -34,10 +34,10 @@ jobs:
     #needs: build_fftw_container
     strategy:
       matrix:
-        simd: ["avx_512f:rdtscp=off",
-               "avx2:rdtscp=off",
-               "avx:rdtscp=off",
-               "sse2:rdtscp=off",
+        simd: ["avx_512f",
+               "avx2",
+               "avx"
+               "sse2",
               ]
         ubuntu: ["18.04"]
     runs-on: ubuntu-${{matrix.ubuntu}}
@@ -73,7 +73,7 @@ jobs:
         --ubuntu ${{matrix.ubuntu}} \
         --gcc ${{env.gcc}} \
         --cmake ${{env.cmake}} \
-        --engines simd=${{matrix.simd}} \
+        --engines simd=${{matrix.simd}}:rdtscp=${{env.rdtscp}} \
         --openmpi ${{env.openmpi}} \
         --regtest \
         --fftw ${{env.fftw}} \
