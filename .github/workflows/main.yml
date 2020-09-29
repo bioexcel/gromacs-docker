@@ -74,7 +74,6 @@ jobs:
         --gcc ${{env.gcc}} \
         --cmake ${{env.cmake}} \
         --engines simd=${{matrix.simd}} \
-        --rdtscp=on \
         --openmpi ${{env.openmpi}} \
         --regtest \
         --fftw ${{env.fftw}} \
