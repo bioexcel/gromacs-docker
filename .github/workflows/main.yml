@@ -65,7 +65,7 @@ jobs:
       run: |
         
         mkdir -p ${{env.docker_tag}}
-        pyton3 gromacs-hpccm-recipes-mult-stages/generate_specifications_file.py\
+        python3 gromacs-hpccm-recipes-mult-stages/generate_specifications_file.py\
         --format docker\
         --gromacs ${{env.gromacs}}\
         --ubuntu ${{matrix.ubuntu}}\
