@@ -66,7 +66,7 @@ jobs:
         docker_tag: gmx-${{env.gromacs}}-cuda-${{env.cuda}}-${{matrix.simd}}
       run: |
         
-        #mkdir -p ${{env.docker_tag}}
+        mkdir -p ${{env.docker_tag}}
         cd gromacs-hpccm-recipes-mult-stages
         python3 generate_specifications_file.py \
         --format docker \
@@ -77,14 +77,14 @@ jobs:
         --engines simd=${{matrix.simd}}:rdtscp=${{env.rdtscp}} \
         --openmpi ${{env.openmpi}} \
         --fftw ${{env.fftw}} \
-        > Dockerfile
+        > ../${{env.docker_tag}}/Dockerfile
 
     - name: Build the Docker image
       env:
         docker_tag: gmx-${{env.gromacs}}-cuda-${{env.cuda}}-${{matrix.simd}}
       run: |
         #sed -i "s|gromacs/fftw|${{env.docker_repo}}:fftw-${{env.fftw_version}}|g" ${{env.docker_tag}}/Dockerfile
-        docker build -t "${{env.docker_repo}}:${{env.docker_tag}}" -f Dockerfile .
+        docker build -t "${{env.docker_repo}}:${{env.docker_tag}}" -f ${{env.docker_tag}}/Dockerfile .
 
     - name: Docker Login
       run: docker login -u ${{secrets.DOCKER_USERNAME}} -p ${{secrets.DOCKER_PASSWORD}}
