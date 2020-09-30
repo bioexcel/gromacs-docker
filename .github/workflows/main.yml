@@ -113,7 +113,7 @@ jobs:
 
     - name: Customise Dockerfile
       run: |
-        sed -i "s|gromacs/fftw|${{env.docker_repo}}:fftw-${{env.fftw_version}}|g" Dockerfile
+        sed -i "s|gromacs/fftw|${{env.docker_repo}}:fftw-${{env.fftw}}|g" Dockerfile
         sed -i "s|gromacs/gromacs-docker|${{env.docker_repo}}|g" Dockerfile
         for type in ${{env.additional_simd_types}}
         do
