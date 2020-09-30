@@ -66,8 +66,9 @@ jobs:
         docker_tag: gmx-${{env.gromacs}}-cuda-${{env.cuda}}-${{matrix.simd}}
       run: |
         
-        mkdir -p ${{env.docker_tag}}
-        python3 gromacs-hpccm-recipes-mult-stages/generate_specifications_file.py \
+        #mkdir -p ${{env.docker_tag}}
+        cd gromacs-hpccm-recipes-mult-stages
+        python3 generate_specifications_file.py \
         --format docker \
         --gromacs ${{env.gromacs}} \
         --ubuntu ${{matrix.ubuntu}} \
