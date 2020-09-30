@@ -75,7 +75,6 @@ jobs:
         --cmake ${{env.cmake}} \
         --engines simd=${{matrix.simd}}:rdtscp=${{env.rdtscp}} \
         --openmpi ${{env.openmpi}} \
-        --regtest \
         --fftw ${{env.fftw}} \
         > ${{env.docker_tag}}/Dockerfile
 
