@@ -77,14 +77,14 @@ jobs:
         --engines simd=${{matrix.simd}}:rdtscp=${{env.rdtscp}} \
         --openmpi ${{env.openmpi}} \
         --fftw ${{env.fftw}} \
-        > ${{env.docker_tag}}/Dockerfile
+        > Dockerfile
 
     - name: Build the Docker image
       env:
         docker_tag: gmx-${{env.gromacs}}-cuda-${{env.cuda}}-${{matrix.simd}}
       run: |
         #sed -i "s|gromacs/fftw|${{env.docker_repo}}:fftw-${{env.fftw_version}}|g" ${{env.docker_tag}}/Dockerfile
-        docker build -t "${{env.docker_repo}}:${{env.docker_tag}}" -f ${{env.docker_tag}}/Dockerfile .
+        docker build -t "${{env.docker_repo}}:${{env.docker_tag}}" -f Dockerfile .
 
     - name: Docker Login
       run: docker login -u ${{secrets.DOCKER_USERNAME}} -p ${{secrets.DOCKER_PASSWORD}}
