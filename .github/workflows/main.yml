@@ -14,7 +14,7 @@ env:
   fftw_md5: 8aac833c943d8e90d51b697b27d4384d
   gromacs: 2020.2
   cmake: 3.17.1
-  gcc: 9
+  gcc: 8
   cuda: 10.1
   openmpi: 4.0.0
   ubuntu: 18.04
