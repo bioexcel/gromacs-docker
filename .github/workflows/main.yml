@@ -75,6 +75,7 @@ jobs:
         --engines simd=${{matrix.simd}}:rdtscp=${{env.rdtscp}} \
         --openmpi ${{env.openmpi}} \
         --fftw ${{env.fftw}} \
+        --regtest \
         > Dockerfile
 
     - name: Build the Docker image
