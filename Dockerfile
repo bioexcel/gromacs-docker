@@ -21,14 +21,15 @@ RUN apt-get update \
     python3 \
   && rm -rf /var/lib/apt/lists/*
 
-# Add the fftw3 libraries
-COPY --from=gromacs/fftw /usr/local/lib /usr/local
+## Add the fftw3 libraries
+#COPY --from=gromacs/fftw /usr/local/lib /usr/local
 
 # Add the GROMACS configurations
-COPY --from=gromacs/gromacs-docker:gmx-2020.2-cuda-10.2-SSE2     /gromacs /gromacs
-COPY --from=gromacs/gromacs-docker:gmx-2020.2-cuda-10.2-AVX_256  /gromacs /gromacs
-COPY --from=gromacs/gromacs-docker:gmx-2020.2-cuda-10.2-AVX2_256 /gromacs /gromacs
-COPY --from=gromacs/gromacs-docker:gmx-2020.2-cuda-10.2-AVX_512  /gromacs /gromacs
+
+#COPY --from=gromacs/gromacs-docker:gmx-2020.2-cuda-10.2-SSE2     /gromacs /gromacs
+#COPY --from=gromacs/gromacs-docker:gmx-2020.2-cuda-10.2-AVX_256  /gromacs /gromacs
+#COPY --from=gromacs/gromacs-docker:gmx-2020.2-cuda-10.2-AVX2_256 /gromacs /gromacs
+#COPY --from=gromacs/gromacs-docker:gmx-2020.2-cuda-10.2-AVX_512  /gromacs /gromacs
 
 # Add architecture-detection script
 COPY gmx-chooser /gromacs/bin/gmx

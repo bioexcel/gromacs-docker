@@ -18,7 +18,6 @@ env:
   cuda: 10.1
   openmpi: 4.0.0
   ubuntu: 18.04
-  simd: 'avx_512f avx2 avx sse2:rdtscp=off'
   rdtscp: off
 
   # additional_simd_types:   This is where you need to specify any
@@ -27,7 +26,7 @@ env:
   #                          and avx2_256, sse2. Not setting this
   #                          results in fftw not being optimised
   #                          for all types
-  additional_simd_types: "SSE2 AXV2"
+  additional_simd_types: "sse2 avx avx2 avx_512f"
   
 jobs:
   build_subcontainer:
@@ -71,11 +70,11 @@ jobs:
         --gromacs ${{env.gromacs}} \
         --ubuntu ${{matrix.ubuntu}} \
         --gcc ${{env.gcc}} \
+        --cuda ${{env.cuda}} \
         --cmake ${{env.cmake}} \
         --engines simd=${{matrix.simd}}:rdtscp=${{env.rdtscp}} \
         --openmpi ${{env.openmpi}} \
         --fftw ${{env.fftw}} \
-        --regtest \
         > Dockerfile
 
     - name: Build the Docker image
@@ -108,13 +107,23 @@ jobs:
     steps:
     - uses: actions/checkout@master
 
-    - name: Customise Dockerfile
+    - name: Edit Dockerfile: Set repo
       run: |
-        sed -i "s|gromacs/fftw|${{env.docker_repo}}:fftw-${{env.fftw}}|g" Dockerfile
         sed -i "s|gromacs/gromacs-docker|${{env.docker_repo}}|g" Dockerfile
+
+    - name: Edit Dockerfile: Set CUDA version
+      run: |
+        sed -i "s|FROM nvidia/cuda:10.2|FROM nvidia/cuda:${{cuda}}|g" Dockerfile
+
+    - name: Edit Dockerfile: Set Ubuntu version
+      run: |
+        sed -i "s|runtime-ubuntu18.04|runtime-ubuntu${{ubuntu}}|g" Dockerfile
+
+    - name: Edit Dockerfile: Set SIMD types to be loaded
+      run: |
         for type in ${{env.additional_simd_types}}
         do
-            sed -i "s|GROMACS configurations|a COPY --from=gromacs/gromacs-docker:gmx-2020.3-cuda-10.2-$type     /gromacs /gromacs|g" Dockerfile
+            sed -i "s|GROMACS configurations|a COPY --from=gromacs/gromacs-docker:gmx-${{env.gromacs}}-cuda-${{env.cuda}}-$type     /gromacs /gromacs|g" Dockerfile
         done
 
     - name: Build the combined Docker image
