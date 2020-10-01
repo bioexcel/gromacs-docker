@@ -113,11 +113,11 @@ jobs:
         
     - name: Edit Dockerfile- Set CUDA version
       run: |
-        sed -i "s|FROM nvidia/cuda:10.2|FROM nvidia/cuda:${{cuda}}|g" Dockerfile
+        sed -i "s|FROM nvidia/cuda:10.2|FROM nvidia/cuda:${{env.cuda}}|g" Dockerfile
         
     - name: Edit Dockerfile- Set Ubuntu version
       run: |
-        sed -i "s|runtime-ubuntu18.04|runtime-ubuntu${{ubuntu}}|g" Dockerfile
+        sed -i "s|runtime-ubuntu18.04|runtime-ubuntu${{env.ubuntu}}|g" Dockerfile
         
     - name: Edit Dockerfile- Set SIMD types to be loaded
       run: |
