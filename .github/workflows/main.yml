@@ -34,8 +34,9 @@ jobs:
     #needs: build_fftw_container
     strategy:
       matrix:
-        simd: ["avx_512f",
-               #"avx2",
+        simd: [
+        #"avx_512f",
+               "avx2",
                #"avx",
                #"sse2",
               ]
@@ -74,7 +75,6 @@ jobs:
         --cuda ${{env.cuda}} \
         --cmake ${{env.cmake}} \
         --engines simd=${{matrix.simd}}:rdtscp=${{env.rdtscp}} \
-        --openmpi ${{env.openmpi}} \
         --fftw ${{env.fftw}} \
         --regtest \
         > Dockerfile
