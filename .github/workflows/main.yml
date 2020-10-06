@@ -26,19 +26,18 @@ env:
   #                          and avx2_256, sse2. Not setting this
   #                          results in fftw not being optimised
   #                          for all types
-  #additional_simd_types: "sse2 avx avx2 avx_512f"
-  additional_simd_types: "avx_512f"
+  additional_simd_types: "sse2 avx avx2 avx_512f"
+  #additional_simd_types: "avx_512f"
   
 jobs:
   build_subcontainer:
     #needs: build_fftw_container
     strategy:
       matrix:
-        simd: [
-        #"avx_512f",
+        simd: ["avx_512f",
                "avx2",
-               #"avx",
-               #"sse2",
+               "avx",
+               "sse2",
               ]
         ubuntu: ["18.04"]
     runs-on: ubuntu-${{matrix.ubuntu}}
