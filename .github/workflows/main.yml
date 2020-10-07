@@ -43,12 +43,7 @@ jobs:
     #needs: build_fftw_container
     strategy:
       matrix: ${{fromJson(needs.setup.outputs.matrix)}}
-#        simd: [#"avx_512f",
-#               "avx2",
-#               "avx",
-#               "sse2",
-#              ]
-        ubuntu: ["18.04"]
+      ubuntu: ["18.04"]
     runs-on: ubuntu-${{matrix.ubuntu}}
 
     if: "!contains(github.event.head_commit.message, 'ci skip')"
