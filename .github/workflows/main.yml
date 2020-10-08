@@ -37,7 +37,7 @@ jobs:
     steps:
     - id: set-matrix
       run: |
-        echo "::set-output name=matrix::{\"include\":[{\"simd\":\"avx2\",{\"simd\":\"sse2\"}]}"
+        echo "::set-output name=matrix::{\"include\":[{\"simd\":\"avx2\"},{\"simd\":\"sse2\"}]}"
 
   build_subcontainer:
     #needs: build_fftw_container
