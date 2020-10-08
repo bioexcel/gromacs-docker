@@ -57,6 +57,8 @@ jobs:
 
     - name: Install python dependencies
       run: |
+        echo ${{matrix}}
+        echo ${{matrix.simd}}
         set -xe
         python -VV
         python -m site
@@ -73,7 +75,7 @@ jobs:
         python3 generate_specifications_file.py \
         --format docker \
         --gromacs ${{env.gromacs}} \
-        --ubuntu ${{matrix.ubuntu}} \
+        --ubuntu ${{env.ubuntu}} \
         --gcc ${{env.gcc}} \
         --cuda ${{env.cuda}} \
         --cmake ${{env.cmake}} \
