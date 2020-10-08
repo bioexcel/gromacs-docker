@@ -51,7 +51,9 @@ jobs:
     needs: setup
     runs-on: ubuntu-latest
     steps:
+    env: docker_details: ${{fromJson(needs.setup.outputs.matrix)}}
     - run: |
+        echo ${{ docker_details }}
         echo ${{fromJson(needs.setup.outputs.matrix)}}
         echo ${{fromJson(needs.setup.outputs.matrix).simd}}
 
