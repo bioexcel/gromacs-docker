@@ -37,7 +37,10 @@ jobs:
     steps:
     - id: set-matrix
       run: |
-        echo "::set-output name=matrix::{\"include\":[{\"simd\":\"avx2\"},{\"simd\":\"sse2\"}]}"
+        SIMD=""
+        for type in ${{ env.additional_simd_types }}; do SIMD=$SIMD{\"simd\":\"$i\"}; done;
+        SIMD=`echo $SIMD | sed 's/}{/},{/g'` 
+        echo "::set-output name=matrix::{\"include\":[$SIMD]}"
 
   job2:
     needs: setup
