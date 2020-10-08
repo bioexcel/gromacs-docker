@@ -46,7 +46,8 @@ jobs:
     - run: build
       
   build_subcontainer:
-    #needs: build_fftw_container
+    needs: job1
+   #needs: build_fftw_container
     strategy:
       matrix: ${{fromJson(needs.job1.outputs.matrix)}}
     runs-on: ubuntu-latest
