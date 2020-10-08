@@ -50,8 +50,8 @@ jobs:
   job3:
     needs: setup
     runs-on: ubuntu-latest
-    steps:
     env: docker_details: ${{fromJson(needs.setup.outputs.matrix)}}
+    steps:
     - run: |
         echo ${{ docker_details }}
         echo ${{fromJson(needs.setup.outputs.matrix)}}
