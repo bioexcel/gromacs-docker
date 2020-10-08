@@ -54,7 +54,7 @@ jobs:
       docker_details: ${{fromJson(needs.setup.outputs.matrix)}}
     steps:
     - run: |
-        echo ${{ docker_details }}
+        echo ${{ env.docker_details }}
         echo ${{fromJson(needs.setup.outputs.matrix)}}
         echo ${{fromJson(needs.setup.outputs.matrix).simd}}
 
