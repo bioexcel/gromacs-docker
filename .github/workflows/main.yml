@@ -39,6 +39,14 @@ jobs:
       run: |
         echo "::set-output name=matrix::{\"include\":[{\"simd\":\"avx2\"},{\"simd\":\"sse2\"}]}"
 
+  job2:
+    needs: job1
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: ${{fromJson(needs.job1.outputs.matrix)}}
+  steps:
+  - run: echo ${{matrix.simd}}
+        
   build_subcontainer:
     #needs: build_fftw_container
     needs: setup
@@ -57,8 +65,6 @@ jobs:
 
     - name: Install python dependencies
       run: |
-        echo ${{matrix}}
-        echo ${{matrix.simd}}
         set -xe
         python -VV
         python -m site
