@@ -30,19 +30,18 @@ env:
   #additional_simd_types: "avx_512f"
   
 jobs:
-  setup:
+  job1:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
     - id: set-matrix
-      run: |
-        echo "::set-output name=matrix::{\"include\":[{\"simd\":\"avx2\",{\"simd\":\"sse2\"}]}"
+      run: echo "::set-output name=matrix::{\"include\":[{\"project\":\"foo\",\"config\":\"Debug\"},{\"project\":\"bar\",\"config\":\"Release\"}]}"
 
   build_subcontainer:
     #needs: build_fftw_container
     strategy:
-      matrix: ${{fromJson(needs.setup.outputs.matrix)}}
+      matrix: ${{fromJson(needs.job1.outputs.matrix)}}
     runs-on: ubuntu-latest
 
     if: "!contains(github.event.head_commit.message, 'ci skip')"
