@@ -1,4 +1,4 @@
----
+--
 name: Build and push to Docker Hub
 on: [push,pull_request]
 env:
@@ -51,7 +51,6 @@ jobs:
 ￼       do
             sed -i "s|configure|& --enable-$type |g" fftw/Dockerfile
         done
-        # DEBUG
         cat fftw/Dockerfile
         
     - name: Build fftw container
