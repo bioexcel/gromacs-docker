@@ -48,7 +48,7 @@ jobs:
     - name: Add SIMD types
       run: |
         for type in ${{env.additional_simd_types}}
-￼       do
+        do
             sed -i "s|configure|& --enable-$type |g" fftw/Dockerfile
         done
         cat fftw/Dockerfile
