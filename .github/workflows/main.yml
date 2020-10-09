@@ -70,9 +70,9 @@ jobs:
         sleep 60 # Need
 
   build_subcontainer:
-    needs: build_fftw_container
+    needs: [build_fftw_container, get_builds]
     strategy:
-      matrix: ${{fromJson(get_builds.outputs.matrix)}}
+      matrix: ${{fromJson(needs.get_builds.outputs.matrix)}}
     runs-on: ubuntu-latest
 
     if: "!contains(github.event.head_commit.message, 'ci skip')"
