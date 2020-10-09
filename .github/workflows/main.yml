@@ -28,17 +28,12 @@ env:
 #  Do not modify anything below this line. #
 ############################################
 
-  # Ubuntu version to be used on the runners,
-  # not in the actuall containers
-  ubuntu_build: ubuntu-18.04
-
-
 jobs:
   # Convert additiona_simd_types into a JSON object that can be used as
   # an input to the build matrix in build_sub_containers
 
   get_builds:
-    runs-on: ${{ env.ubuntu_build }}
+    runs-on: ubuntu-18.04
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
@@ -52,7 +47,7 @@ jobs:
   # Builds the fftw container needed for the final combined container.
   build_fftw_container:
     needs: get_builds
-    runs-on: ${{ env.ubuntu_build }}
+    runs-on: ubuntu-18.04
     if: "!contains(github.event.head_commit.message, 'ci skip')"
     steps:
     - uses: actions/checkout@master
@@ -95,7 +90,7 @@ jobs:
     # Fetch JSON created from additional_simd_types
     strategy:
       matrix: ${{fromJson(needs.get_builds.outputs.matrix)}}
-    runs-on: ${{ env.ubuntu_build }}
+    runs-on: ubuntu-18.04
 
     if: "!contains(github.event.head_commit.message, 'ci skip')"
     steps:
@@ -160,7 +155,7 @@ jobs:
 # publish to docker hub
   build_final_container:
     needs: build_subcontainer
-    runs-on: ${{ env.ubuntu_build }}
+    runs-on: ubuntu-18.04
 
     # Only combine and push to Docker Hub if we are on dev branch (TODO: master) and 
     # this is not a pull request. Skip if commit message is "ci skip"
