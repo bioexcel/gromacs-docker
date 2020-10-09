@@ -20,7 +20,7 @@ env:
   #                          SIMD types that you want to build a
   #                          container for.
   additional_simd_types: "sse2 avx avx2"
-  
+
 jobs:
   get_builds:
     runs-on: ubuntu-latest
@@ -52,27 +52,25 @@ jobs:
             sed -i "s|configure|& --enable-$type |g" fftw/Dockerfile
         done
         cat fftw/Dockerfile
-        
+
     - name: Build fftw container
       run: |
         docker build -t "${{env.docker_repo}}:fftw-${{env.fftw}}" -f fftw/Dockerfile .
 
     - name: List containers
       run: docker ps
-      
+
     - name: Docker Login
       run: docker login -u ${{secrets.DOCKER_USERNAME}} -p ${{secrets.DOCKER_PASSWORD}}
 
     - name: Docker Push
       if: "${{ github.event_name == 'push' }}"
       run: |
-        docker push "${{env.docker_repo}}:${{env.fftw}}"
+        docker push "${{env.docker_repo}}:fftw-${{env.fftw}}"
         sleep 60 # Need
 
-        
-        
   build_subcontainer:
-    needs: get_builds
+    needs: build_fftw_container
     strategy:
       matrix: ${{fromJson(needs.get_builds.outputs.matrix)}}
     runs-on: ubuntu-latest
@@ -146,15 +144,15 @@ jobs:
     - name: Edit Dockerfile- Set repo
       run: |
         sed -i "s|gromacs/gromacs-docker|${{env.docker_repo}}|g" Dockerfile
-        
+
     - name: Edit Dockerfile- Set CUDA version
       run: |
         sed -i "s|FROM nvidia/cuda:10.2|FROM nvidia/cuda:${{env.cuda}}|g" Dockerfile
-        
+
     - name: Edit Dockerfile- Set Ubuntu version
       run: |
         sed -i "s|runtime-ubuntu18.04|runtime-ubuntu${{env.ubuntu}}|g" Dockerfile
-        
+
     - name: Edit Dockerfile- Set SIMD types to be loaded
       run: |
         for type in ${{env.additional_simd_types}}
@@ -163,11 +161,11 @@ jobs:
         done
         #DEBUG
         cat Dockerfile
-        
+
     - name: Build the combined Docker image
       env:
         docker_tag: gmx-${{env.gromacs}}-cuda-${{env.cuda}}
-      run:        
+      run: |
         docker build -t "${{env.docker_repo}}:${{env.docker_tag}}" -t "${{env.docker_repo}}:latest" -f Dockerfile .
 
     - name: Docker Login
