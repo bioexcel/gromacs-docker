@@ -6,6 +6,9 @@ env:
   #                dockerhub repository you will be using to register the
   #                docker containers to.
   docker_repo: longr/gromacs-docker
+
+  # Here you can speify the versions of the
+  # various parameters, such as gcc or cuda.
   fftw: 3.3.8
   fftw_md5: 8aac833c943d8e90d51b697b27d4384d
   gromacs: 2020.2
@@ -21,9 +24,21 @@ env:
   #                          container for.
   additional_simd_types: "sse2 avx avx2"
 
+############################################
+#  Do not modify anything below this line. #
+############################################
+
+  # Ubuntu version to be used on the runners,
+  # not in the actuall containers
+  ubuntu_build: ubuntu-18.04
+
+
 jobs:
+  # Convert additiona_simd_types into a JSON object that can be used as
+  # an input to the build matrix in build_sub_containers
+
   get_builds:
-    runs-on: ubuntu-latest
+    runs-on: ${{ env.ubuntu_build }}
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
@@ -33,18 +48,23 @@ jobs:
         SIMD=`echo $SIMD | sed 's/}{/},{/g'`
         echo "::set-output name=matrix::{\"include\":[$SIMD]}"
 
+
+  # Builds the fftw container needed for the final combined container.
   build_fftw_container:
     needs: get_builds
-    runs-on: ubuntu-18.04
+    runs-on: ${{ env.ubuntu_build }}
     if: "!contains(github.event.head_commit.message, 'ci skip')"
     steps:
     - uses: actions/checkout@master
+
+    # Find and replace default fftw with version specified at top
 
     - name: Set FFTW version
       run: |
         sed -i "s|3.3.8|${{env.fftw}}|g" fftw/Dockerfile
         sed -i "s|8aac833c943d8e90d51b697b27d4384d|${{env.fftw_md5}}|g" fftw/Dockerfile
 
+    # Loop over simd types and append to build command in Dockerfile.
     - name: Add SIMD types
       run: |
         for type in ${{env.additional_simd_types}}
@@ -57,9 +77,6 @@ jobs:
       run: |
         docker build -t "${{env.docker_repo}}:fftw-${{env.fftw}}" -f fftw/Dockerfile .
 
-    - name: List containers
-      run: docker ps
-
     - name: Docker Login
       run: docker login -u ${{secrets.DOCKER_USERNAME}} -p ${{secrets.DOCKER_PASSWORD}}
 
@@ -67,13 +84,18 @@ jobs:
       if: "${{ github.event_name == 'push' }}"
       run: |
         docker push "${{env.docker_repo}}:fftw-${{env.fftw}}"
-        sleep 60 # Need
+        sleep 60
+        # Needed to give time to register container before being
+        # Pulled by next steps.
 
+
+# Build sub containers, one for each SIMD type
   build_subcontainer:
     needs: [build_fftw_container, get_builds]
+    # Fetch JSON created from additional_simd_types
     strategy:
       matrix: ${{fromJson(needs.get_builds.outputs.matrix)}}
-    runs-on: ubuntu-latest
+    runs-on: ${{ env.ubuntu_build }}
 
     if: "!contains(github.event.head_commit.message, 'ci skip')"
     steps:
@@ -132,9 +154,13 @@ jobs:
   # If you specified multiple CUDA or gromacs versions, or
   # you changed them you need to set these below
 
+
+
+# Combine all containers into one primary container and
+# publish to docker hub
   build_final_container:
     needs: build_subcontainer
-    runs-on: ubuntu-18.04
+    runs-on: ${{ env.ubuntu_build }}
 
     # Only combine and push to Docker Hub if we are on dev branch (TODO: master) and 
     # this is not a pull request. Skip if commit message is "ci skip"
