@@ -6,11 +6,7 @@ env:
   #                dockerhub repository you will be using to register the
   #                docker containers to.
   docker_repo: longr/gromacs-docker
-  # fftw_version:  This is the version of lib-fftw we would like to
-  #                compile and create a docker container for
   fftw: 3.3.8
-  # fftw_md5:      The md5 of the lib-fftw version we want as it is
-  #                downloaded in the build stage
   fftw_md5: 8aac833c943d8e90d51b697b27d4384d
   gromacs: 2020.2
   cmake: 3.17.1
@@ -37,6 +33,45 @@ jobs:
         SIMD=`echo $SIMD | sed 's/}{/},{/g'`
         echo "::set-output name=matrix::{\"include\":[$SIMD]}"
 
+  build_fftw_container:
+    needs: get_builds
+    runs-on: ubuntu-18.04
+    if: "!contains(github.event.head_commit.message, 'ci skip')"
+    steps:
+    - uses: actions/checkout@master
+
+    - name: Set FFTW version
+      run: |
+        sed -i "s|3.3.8|${{env.fftw}}|g" fftw/Dockerfile
+        sed -i "s|8aac833c943d8e90d51b697b27d4384d|${{env.fftw_md5}}|g" fftw/Dockerfile
+
+    - name: Add SIMD types
+      run: |
+        for type in ${{env.additional_simd_types}}
+￼       do
+            sed -i "s|configure|& --enable-$type |g" fftw/Dockerfile
+        done
+        #DEBUG
+        cat fftw/Dockerfile
+        
+    - name: Build fftw container
+      run: |
+        docker build -t "${{env.docker_repo}}:fftw-${{env.fftw}}" -f fftw/Dockerfile .
+
+    - name: List containers
+      run: docker ps
+      
+    - name: Docker Login
+      run: docker login -u ${{secrets.DOCKER_USERNAME}} -p ${{secrets.DOCKER_PASSWORD}}
+
+    - name: Docker Push
+      if: "${{ github.event_name == 'push' }}"
+      run: |
+        docker push "${{env.docker_repo}}:${{env.fftw}}"
+        sleep 60 # Need
+
+        
+        
   build_subcontainer:
     needs: get_builds
     strategy:
@@ -99,7 +134,7 @@ jobs:
   # Combine all subcontainers into a single container.
   # If you specified multiple CUDA or gromacs versions, or
   # you changed them you need to set these below
-  # 
+
   build_final_container:
     needs: build_subcontainer
     runs-on: ubuntu-18.04
@@ -127,7 +162,9 @@ jobs:
         do
             sed -i "s|GROMACS configurations|a COPY --from=gromacs/gromacs-docker:gmx-${{env.gromacs}}-cuda-${{env.cuda}}-$type     /gromacs /gromacs|g" Dockerfile
         done
-
+        #DEBUG
+        cat Dockerfile
+        
     - name: Build the combined Docker image
       env:
         docker_tag: gmx-${{env.gromacs}}-cuda-${{env.cuda}}
