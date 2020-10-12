@@ -66,7 +66,6 @@ jobs:
         do
             sed -i "s|configure|& --enable-$type |g" fftw/Dockerfile
         done
-        cat fftw/Dockerfile
 
     - name: Build fftw container
       run: |
@@ -124,7 +123,7 @@ jobs:
         --cuda ${{env.cuda}} \
         --cmake ${{env.cmake}} \
         --engines simd=${{matrix.simd}}:rdtscp=${{env.rdtscp}} \
-        --fftw ${{env.fftw}} \
+        --fftw-container ${{env.docker_repo}}:fftw-${{env.fftw}} \
         --regtest \
         > Dockerfile
 
@@ -156,6 +155,7 @@ jobs:
   build_final_container:
     needs: build_subcontainer
     runs-on: ubuntu-18.04
+    if: "!contains(github.event.head_commit.message, 'ci skip')"
 
     # Only combine and push to Docker Hub if we are on dev branch (TODO: master) and 
     # this is not a pull request. Skip if commit message is "ci skip"
@@ -180,8 +180,6 @@ jobs:
         do
             sed -i "s|GROMACS configurations|a COPY --from=gromacs/gromacs-docker:gmx-${{env.gromacs}}-cuda-${{env.cuda}}-$type     /gromacs /gromacs|g" Dockerfile
         done
-        #DEBUG
-        cat Dockerfile
 
     - name: Build the combined Docker image
       env:
