@@ -166,6 +166,10 @@ jobs:
       run: |
         sed -i "s|gromacs/gromacs-docker|${{env.docker_repo}}|g" Dockerfile
 
+    - name: Edit Dockerfile- Set FFTW version
+      run: |
+        sed -i "s|fftw-3.3.8|fftw-${{env.fftw}}|g" Dockerfile
+
     - name: Edit Dockerfile- Set CUDA version
       run: |
         sed -i "s|FROM nvidia/cuda:10.2|FROM nvidia/cuda:${{env.cuda}}|g" Dockerfile
@@ -178,7 +182,7 @@ jobs:
       run: |
         for type in ${{env.additional_simd_types}}
         do
-            sed -i "s|GROMACS configurations|a COPY --from=gromacs/gromacs-docker:gmx-${{env.gromacs}}-cuda-${{env.cuda}}-$type     /gromacs /gromacs|g" Dockerfile
+            sed -i "s|GROMACS configurations|a COPY --from=${{env.docker_repo}}:gmx-${{env.gromacs}}-cuda-${{env.cuda}}-$type     /gromacs /gromacs|g" Dockerfile
         done
 
     - name: Build the combined Docker image

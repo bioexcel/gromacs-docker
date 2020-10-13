@@ -22,7 +22,7 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/*
 
 ## Add the fftw3 libraries
-#COPY --from=gromacs/fftw /usr/local/lib /usr/local
+COPY --from=gromacs/gromacs-docker:fftw-3.3.8 /usr/local/lib /usr/local
 
 # Add the GROMACS configurations
 
