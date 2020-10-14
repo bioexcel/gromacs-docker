@@ -68,7 +68,7 @@ jobs:
     - name: Generate Dockerfiles for FFTW
       run: |
         cd gromacs-hpccm-recipes-mult-stages
-        python3 generate_specifications_file.py fftw\
+        python3 generate_specifications_file.py fftw \
         --format docker \
         --ubuntu ${{ env.ubuntu }} \
         --gcc ${{ env.gcc }} \
@@ -122,7 +122,7 @@ jobs:
     - name: Generate Dockerfiles
       run: |
         cd gromacs-hpccm-recipes-mult-stages
-        python3 generate_specifications_file.py gmx\
+        python3 generate_specifications_file.py gmx \
         --format docker \
         --gromacs ${{env.gromacs}} \
         --ubuntu ${{env.ubuntu}} \
