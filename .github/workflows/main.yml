@@ -10,7 +10,6 @@ env:
   # Here you can speify the versions of the
   # various parameters, such as gcc or cuda.
   fftw: 3.3.8
-  fftw_md5: 8aac833c943d8e90d51b697b27d4384d
   gromacs: 2020.2
   cmake: 3.17.1
   gcc: 8
@@ -19,10 +18,9 @@ env:
   ubuntu: 18.04
   rdtscp: off
 
-  # additional_simd_types:   This is where you need to specify any
-  #                          SIMD types that you want to build a
-  #                          container for.
-  additional_simd_types: "sse2 avx avx2"
+  # simd_types:  List of simd instruction set, Multiple option can be
+  #              chosen separated by space.
+  simd_types: "sse2 avx avx2"
 
 ############################################
 #  Do not modify anything below this line. #
@@ -31,7 +29,6 @@ env:
 jobs:
   # Convert additiona_simd_types into a JSON object that can be used as
   # an input to the build matrix in build_sub_containers
-
   get_builds:
     runs-on: ubuntu-18.04
     outputs:
@@ -39,7 +36,7 @@ jobs:
     steps:
     - id: set-matrix
       run: |
-        for type in ${{ env.additional_simd_types }}; do SIMD=$SIMD{\"simd\":\"$type\"}; done;
+        for type in ${{ env.simd_types }}; do SIMD=$SIMD{\"simd\":\"$type\"}; done;
         SIMD=`echo $SIMD | sed 's/}{/},{/g'`
         echo "::set-output name=matrix::{\"include\":[$SIMD]}"
 
@@ -50,26 +47,37 @@ jobs:
     runs-on: ubuntu-18.04
     if: "!contains(github.event.head_commit.message, 'ci skip')"
     steps:
-    - uses: actions/checkout@master
+    - uses: actions/checkout@v2
+      with:
+        submodules: 'true'
 
-    # Find and replace default fftw with version specified at top
+    - uses: actions/setup-python@v1
+      with:
+        python-version: "3.7"
 
-    - name: Set FFTW version
+    - name: Install python dependencies
       run: |
-        sed -i "s|3.3.8|${{env.fftw}}|g" fftw/Dockerfile
-        sed -i "s|8aac833c943d8e90d51b697b27d4384d|${{env.fftw_md5}}|g" fftw/Dockerfile
+        set -xe
+        python -VV
+        python -m site
+        python -m pip install --upgrade pip
+        python -m pip install hpccm
 
-    # Loop over simd types and append to build command in Dockerfile.
-    - name: Add SIMD types
+   # The Dockerfiles must be generated based on SIMD type, Gromacs
+   # version and CUDA version
+    - name: Generate Dockerfiles for FFTW
       run: |
-        for type in ${{env.additional_simd_types}}
-        do
-            sed -i "s|configure|& --enable-$type |g" fftw/Dockerfile
-        done
+        cd gromacs-hpccm-recipes-mult-stages
+        python3 generate_specifications_file.py fftw\
+        --format docker \
+        --ubuntu ${{ env.ubuntu }} \
+        --gcc ${{ env.gcc }} \
+        --simd ${ {env.simd_types }}\
+        > Dockerfile
 
     - name: Build fftw container
       run: |
-        docker build -t "${{env.docker_repo}}:fftw-${{env.fftw}}" -f fftw/Dockerfile .
+        docker build -t "${{env.docker_repo}}:fftw-${{env.fftw}}" -f Dockerfile .
 
     - name: Docker Login
       run: docker login -u ${{secrets.DOCKER_USERNAME}} -p ${{secrets.DOCKER_PASSWORD}}
@@ -83,10 +91,10 @@ jobs:
         # Pulled by next steps.
 
 
-# Build sub containers, one for each SIMD type
+  # Build sub containers, one for each SIMD type
   build_subcontainer:
     needs: [build_fftw_container, get_builds]
-    # Fetch JSON created from additional_simd_types
+    # Fetch JSON created from simd_types
     strategy:
       matrix: ${{fromJson(needs.get_builds.outputs.matrix)}}
     runs-on: ubuntu-18.04
@@ -96,6 +104,7 @@ jobs:
     - uses: actions/checkout@v2
       with:
         submodules: 'true'
+        
     - uses: actions/setup-python@v1
       with:
         python-version: "3.7"
@@ -111,11 +120,9 @@ jobs:
    # The Dockerfiles must be generated based on SIMD type, Gromacs
    # version and CUDA version
     - name: Generate Dockerfiles
-      env:
-        docker_tag: gmx-${{env.gromacs}}-cuda-${{env.cuda}}-${{matrix.simd}}
       run: |
         cd gromacs-hpccm-recipes-mult-stages
-        python3 generate_specifications_file.py \
+        python3 generate_specifications_file.py gmx\
         --format docker \
         --gromacs ${{env.gromacs}} \
         --ubuntu ${{env.ubuntu}} \
@@ -143,12 +150,6 @@ jobs:
       if: "${{ github.event_name == 'push' }}"
       run: |
         docker push "${{env.docker_repo}}:${{env.docker_tag}}"
-
-  # Combine all subcontainers into a single container.
-  # If you specified multiple CUDA or gromacs versions, or
-  # you changed them you need to set these below
-
-
 
 # Combine all containers into one primary container and
 # publish to docker hub
@@ -180,7 +181,7 @@ jobs:
 
     - name: Edit Dockerfile- Set SIMD types to be loaded
       run: |
-        for type in ${{env.additional_simd_types}}
+        for type in ${{env.simd_types}}
         do
             sed -i "s|GROMACS configurations|a COPY --from=${{env.docker_repo}}:gmx-${{env.gromacs}}-cuda-${{env.cuda}}-$type     /gromacs /gromacs|g" Dockerfile
         done
