@@ -72,8 +72,8 @@ jobs:
         --format docker \
         --ubuntu ${{ env.ubuntu }} \
         --gcc ${{ env.gcc }} \
-        --simd ${{ env.simd_types }}\
-        --fftw ${{ env.fftw }}\
+        --simd ${{ env.simd_types }} \
+        --fftw ${{ env.fftw }} \
         > Dockerfile
 
     - name: Build fftw container
