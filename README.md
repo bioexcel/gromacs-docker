@@ -72,13 +72,33 @@ Other open source dependencies include:
 
 ## Contribute
 
-Contributions welcome!
+Contributions welcome! Please fork this repository and submit a pull request to the dev branch.
 
 The source code for GROMACS is available from http://manual.gromacs.org/current/download and is maintained at https://github.com/gromacs/gromacs
 
-The `Dockerfile` that made this container image is maintained at https://github.com/bioexcel/gromacs-docker
-Please submit any pull request to the `dev` branch as the `master` branch correspond to the `latest` Docker tag.
+### Building the containers
 
+All of the containers are built by GitHub actions.  This is done in a three part process.
+
+ - Build a container with optimised FFTW in.
+ - Build containers with emacs optimised for each SIMD type and/or gromacs version
+ - Build a container for each gromacs version that includes all containers built\
+ in the previous step
+
+This will require you to have an account on Dockerhub, and to have setup a PAT that you have then told Github about.  The main part that then needs changing is the dockerhub repository in the workflow file: `.github/workflow/main.yml`
+
+### Bumping the version of gromacs, cuda or SIMD types
+
+To change the version of gromacs or CUDA, you just need to change the variables in the workflow file: `.github/workflow/main.yml`
+
+To change the SIMD types requires you to update the build matrix in workflow file and add them to the `additoon_simd_types` in the workflow file.
+
+### CI Workflow and how the container is built
+
+- `build-all-dockerfiles.sh` calls `build-dockerfiles.py` once for each simd-type specified in the array 'simd_types'.
+- `build-dockerfiles.py` generates a dockerfile based on several variables, such as GROMACS version, CUDA version and SIMD type. This is stored in a directory named `gmx-<gromacs_version>-cuda-<cuda_version>-<simd_type>`.
+- `fftw/Dockerfile` will build an optimised version of lib-fftw in a container.
+- `Dockerfile` will build the single combined container
 
 ## Contact us
 
