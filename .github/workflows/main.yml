@@ -188,6 +188,10 @@ jobs:
             sed -i "s|GROMACS configurations|a COPY --from=${{env.docker_repo}}:gmx-${{env.gromacs}}-cuda-${{env.cuda}}-$type     /gromacs /gromacs|g" Dockerfile
         done
 
+    - name: Print out details
+      run: |
+        cat Dockerfile
+    
     - name: Build the combined Docker image
       env:
         docker_tag: gmx-${{env.gromacs}}-cuda-${{env.cuda}}
