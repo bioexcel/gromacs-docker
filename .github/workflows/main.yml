@@ -185,7 +185,7 @@ jobs:
       run: |
         for type in ${{env.simd_types}}
         do
-            sed -i "|GROMACS configurations|a COPY --from=${{env.docker_repo}}:gmx-${{env.gromacs}}-cuda-${{env.cuda}}-$type     /usr/local/gromacs /gromacs" Dockerfile
+            sed -i "/GROMACS configurations/a COPY --from=${{env.docker_repo}}:gmx-${{env.gromacs}}-cuda-${{env.cuda}}-$type     \/usr\/local\/gromacs \/gromacs" Dockerfile
             done
 
     - name: Print out details
