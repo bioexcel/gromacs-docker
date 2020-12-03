@@ -22,7 +22,7 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/*
 
 ## Add the fftw3 libraries
-COPY --from=gromacs/gromacs-docker:fftw-3.3.8 /usr/local/lib /usr/local
+COPY --from=gromacs/gromacs-docker:fftw-3.3.8 /usr/local/lib /usr/local/lib
 
 # Add the GROMACS configurations
 
@@ -35,6 +35,7 @@ COPY --from=gromacs/gromacs-docker:fftw-3.3.8 /usr/local/lib /usr/local
 COPY gmx-chooser /gromacs/bin/gmx
 RUN chmod +x /gromacs/bin/gmx
 
+ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
 ENV PATH=$PATH:/gromacs/bin
 
 #
