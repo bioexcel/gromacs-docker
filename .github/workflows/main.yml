@@ -134,8 +134,7 @@ jobs:
         --cmake ${{env.cmake}} \
         --engines simd=${{matrix.simd}}:rdtscp=${{env.rdtscp}} \
         --openmpi ${{env.openmpi}} \
-        --fftw-container ${{env.docker_repo}}:fftw-${{env.fftw}} \
-        --regtest \
+        --fftw-container ${{env.docker_repo}}:fftw-${{env.fftw}}
         > Dockerfile
 
     - name: Build the Docker image
