@@ -133,6 +133,7 @@ jobs:
         --cuda ${{env.cuda}} \
         --cmake ${{env.cmake}} \
         --engines simd=${{matrix.simd}}:rdtscp=${{env.rdtscp}} \
+        --openmpi ${{env.openmpi}} \
         --fftw-container ${{env.docker_repo}}:fftw-${{env.fftw}} \
         --regtest \
         > Dockerfile
