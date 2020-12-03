@@ -79,6 +79,7 @@ jobs:
     - name: Build fftw container
       run: |
         cd gromacs-hpccm-recipes-mult-stages
+        cat Dockerfile
         docker build -t "${{env.docker_repo}}:fftw-${{env.fftw}}" -f Dockerfile .
 
     - name: Docker Login
