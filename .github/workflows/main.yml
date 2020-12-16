@@ -189,6 +189,13 @@ jobs:
             sed -i "/GROMACS configurations/a COPY --from=${{env.docker_repo}}:gmx-${{env.gromacs}}-cuda-${{env.cuda}}-$type     \/usr\/local\/gromacs \/gromacs" Dockerfile
             done
 
+    - name: Edit Dockerfile- COPY Libraries
+      run: |
+            sed -i "/# Copy compiled dependencies/a COPY --from=${{env.docker_repo}}:gmx-${{env.gromacs}}-cuda-${{env.cuda}}-${{env.simd_types[0]}}     \/usr\/local\/openmpi \/usr\/local\/openmpi" Dockerfile
+            sed -i "/# Copy compiled dependencies/a COPY --from=${{env.docker_repo}}:gmx-${{env.gromacs}}-cuda-${{env.cuda}}-${{env.simd_types[0]}}     \/usr\/local\/cuda-${{env.cuda}} \/usr\/local\//cuda-${{env.cuda}}" Dockerfile
+            sed -i "/# Copy compiled dependencies/a COPY --from=${{env.docker_repo}}:gmx-${{env.gromacs}}-cuda-${{env.cuda}}-${{env.simd_types[0]}}     \/usr\/local\/cuda \/usr\/local\//cuda" Dockerfile
+
+            
     - name: Print out details
       run: |
         cat Dockerfile
