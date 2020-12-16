@@ -39,11 +39,6 @@ jobs:
         for type in ${{ env.simd_types }}; do SIMD=$SIMD{\"simd\":\"$type\"}; done;
         SIMD=`echo $SIMD | sed 's/}{/},{/g'`
         echo "::set-output name=matrix::{\"include\":[$SIMD]}"
-    - id: check-matrix
-      run: |
-        FIRST_SIMD=`echo ${{env.simd_types}} | grep -o ^[a-zA-Z0-9]*`
-        echo $FIRST_SIMD
-
 
   # Builds the fftw container needed for the final combined container.
   build_fftw_container:
@@ -196,9 +191,9 @@ jobs:
     - name: Edit Dockerfile- COPY Libraries
       run: |
         FIRST_SIMD=`echo ${{env.simd_types}} | grep -o ^[a-zA-Z0-9]*`
-            sed -i "/# Copy compiled dependencies/a COPY --from=${{env.docker_repo}}:gmx-${{env.gromacs}}-cuda-${{env.cuda}}-$FIRST_SIMD    \/usr\/local\/openmpi \/usr\/local\/openmpi" Dockerfile
-            sed -i "/# Copy compiled dependencies/a COPY --from=${{env.docker_repo}}:gmx-${{env.gromacs}}-cuda-${{env.cuda}}-$FIRST_SIMD     \/usr\/local\/cuda-${{env.cuda}} \/usr\/local\/cuda-${{env.cuda}}" Dockerfile
-            sed -i "/# Copy compiled dependencies/a COPY --from=${{env.docker_repo}}:gmx-${{env.gromacs}}-cuda-${{env.cuda}}-$FIRST_SIMD     \/usr\/local\/cuda \/usr\/local\/cuda" Dockerfile
+        sed -i "/# Copy compiled dependencies/a COPY --from=${{env.docker_repo}}:gmx-${{env.gromacs}}-cuda-${{env.cuda}}-$FIRST_SIMD    \/usr\/local\/openmpi \/usr\/local\/openmpi" Dockerfile
+        sed -i "/# Copy compiled dependencies/a COPY --from=${{env.docker_repo}}:gmx-${{env.gromacs}}-cuda-${{env.cuda}}-$FIRST_SIMD     \/usr\/local\/cuda-${{env.cuda}} \/usr\/local\/cuda-${{env.cuda}}" Dockerfile
+        sed -i "/# Copy compiled dependencies/a COPY --from=${{env.docker_repo}}:gmx-${{env.gromacs}}-cuda-${{env.cuda}}-$FIRST_SIMD     \/usr\/local\/cuda \/usr\/local\/cuda" Dockerfile
 
             
     - name: Print out details
