@@ -42,8 +42,8 @@ jobs:
     - id: check-matrix
       run: |
         echo ${{ env.simd_types }}
-        echo ${{${{ (env.simd_types) }}.[0]}}
-        echo ${{${{ (env.simd_types) }}.0}}
+        echo ${{ (env.simd_types) }}.[0]
+        echo ${{ (env.simd_types) }}.0
         error_and_fail
 
 
