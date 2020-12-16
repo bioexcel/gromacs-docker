@@ -198,10 +198,6 @@ jobs:
         FIRST_SIMD=`echo ${{env.simd_types}} | grep -o ^[a-zA-Z0-9]*`
         sed -i "/# Copy compiled dependencies/a COPY --from=${{env.docker_repo}}:gmx-${{env.gromacs}}-cuda-${{env.cuda}}-$FIRST_SIMD     \/usr\/local\/cuda-${{env.cuda}} \/usr\/local\/cuda-${{env.cuda}}" Dockerfile
 
-    - name: Edit Dockerfile- COPY cuda
-      run: |
-        FIRST_SIMD=`echo ${{env.simd_types}} | grep -o ^[a-zA-Z0-9]*`
-        sed -i "/# Copy compiled dependencies/a COPY --from=${{env.docker_repo}}:gmx-${{env.gromacs}}-cuda-${{env.cuda}}-$FIRST_SIMD     \/usr\/local\/cuda \/usr\/local\/cuda" Dockerfile
 
             
     - name: Print out details
