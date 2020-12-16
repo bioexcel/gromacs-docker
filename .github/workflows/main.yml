@@ -141,6 +141,7 @@ jobs:
         docker_tag: gmx-${{env.gromacs}}-cuda-${{env.cuda}}-${{matrix.simd}}
       run: |
         cd gromacs-hpccm-recipes-mult-stages
+        cat Dockerfile
         docker build -t "${{env.docker_repo}}:${{env.docker_tag}}" -f Dockerfile .
 
     - name: Docker Login
