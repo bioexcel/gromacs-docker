@@ -19,6 +19,8 @@ RUN apt-get update \
     openmpi-bin \
     openmpi-common \
     python3 \
+    openssh-client \
+    wget \
   && rm -rf /var/lib/apt/lists/*
 
 ## Add the fftw3 libraries
