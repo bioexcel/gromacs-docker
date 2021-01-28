@@ -17,7 +17,7 @@ This is a Docker image of GROMACS, which - if used with [nvidia-docker](https://
 
 Docker image tags correspond to the official [Gromacs releases](http://manual.gromacs.org/documentation/). Note that the tags without a minor version number (e.g. `2019`) are not updated for new minor versions (e.g. `2019.1`), as `2019` and `2019.1` are distinct GROMACS versions (`2019` ~= `2019.0`).
 
-Feel free to raise a [pull request](https://github.com/bioexcel/gromacs-docker/pulls) to add a new release by updating `GROMACS_VERSION` and `GROMACS_MD5`. 
+Feel free to raise a [pull request](https://github.com/bioexcel/gromacs-docker/pulls) to add a new release by updating according to the instructions below.
 
 
 ## Running
@@ -81,17 +81,17 @@ The source code for GROMACS is available from http://manual.gromacs.org/current/
 All of the containers are built by GitHub actions.  This is done in a three part process.
 
  - Build a container with optimised FFTW in.
- - Build containers with emacs optimised for each SIMD type and/or gromacs version
- - Build a container for each gromacs version that includes all containers built\
+ - Build containers with GROMACS optimised for each SIMD type and/or GROMACS version
+ - Build a container for each GROMACS version that includes all containers built\
  in the previous step
 
 This will require you to have an account on Dockerhub, and to have setup a PAT that you have then told Github about.  The main part that then needs changing is the dockerhub repository in the workflow file: `.github/workflow/main.yml`
 
-### Bumping the version of gromacs, cuda or SIMD types
+### Bumping the version of GROMACS, cuda or SIMD types
 
-To change the version of gromacs or CUDA, you just need to change the variables in the workflow file: `.github/workflow/main.yml`
+To change the version of GROMACS or CUDA, you just need to change the variables in the workflow file: `.github/workflow/main.yml`
 
-To change the SIMD types requires you to update the build matrix in workflow file and add them to the `additoon_simd_types` in the workflow file.
+To change the SIMD types requires you to update the build matrix in workflow file and add them to the `additional_simd_types` in the workflow file.
 
 ### CI Workflow and how the container is built
 
