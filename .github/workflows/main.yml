@@ -12,13 +12,13 @@ env:
   # fftw_md5:      The md5 of the lib-fftw version we want as it is
   #                downloaded in the build stage
   fftw_md5: 8aac833c943d8e90d51b697b27d4384d
-  # additional_simd_types:   This is where you need to specify any
+  # additional_simd_types:   Specify any
   #                          SIMD types that will be needed beyond
   #                          the basic 4 of avx_256, avx_512,
-  #                          and avx2_256, sse2. Not setting this
-  #                          results in fftw not being optimised
-  #                          for all types
-  additional_simd_types: "SSE2 AXV2"
+  #                          and avx2_256, sse2.
+  additional_simd_types: ""
+  # fftw_simd_types:         Specify any SIMD types for building fftw.
+  fftw_simd_types: "sse2 avx2"
   
 jobs:
   # Build the container for the optimised lib-fftw.  This saves us
@@ -33,7 +33,7 @@ jobs:
     # add additional simd_types
     - name: Set FFTW version
       run: |
-        for type in ${{env.additional_simd_types}}
+        for type in ${{env.fftw_simd_types}}
         do
           sed -i "s|--enable-float|& --enable-$type|g" fftw/Dockerfile
         done
