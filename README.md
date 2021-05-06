@@ -33,6 +33,12 @@ The below highlights this using an example of using `pdb2gmx` from the tutorial 
     wget http://www.mdtutorials.com/gmx/membrane_protein/Files/KALP-15_princ.pdb
     docker run -v $HOME/data:/data -w /data -it gromacs/gromacs gmx pdb2gmx -f KALP-15_princ.pdb -o KALP-15_processed.gro -ignh -ter -water spc
 
+If you get a permissions error when trying to run this command it is likely that SELINUX is blocking it and the permissions need to be set by adding `:Z` to the end of the volume bind as so:
+
+    mkdir $HOME/data ; cd $HOME/data
+    wget http://www.mdtutorials.com/gmx/membrane_protein/Files/KALP-15_princ.pdb
+    docker run -v $HOME/data:/data:Z -w /data -it gromacs/gromacs gmx pdb2gmx -f KALP-15_princ.pdb -o KALP-15_processed.gro -ignh -ter -water spc
+
 
 It is beyond the scope of this README file to document GROMACS usage. For further information see:
 
