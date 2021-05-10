@@ -19,21 +19,28 @@ RUN apt-get update \
     openmpi-bin \
     openmpi-common \
     python3 \
+    openssh-client \
+    wget \
   && rm -rf /var/lib/apt/lists/*
 
-# Add the fftw3 libraries
-COPY --from=gromacs/fftw /usr/local/lib /usr/local
+## Add the fftw3 libraries
+COPY --from=gromacs/gromacs-docker:fftw-3.3.8 /usr/local/lib /usr/local/lib
+
+# Copy compiled dependencies
+
 
 # Add the GROMACS configurations
-COPY --from=gromacs/gromacs-docker:gmx-2020.2-cuda-10.2-SSE2     /gromacs /gromacs
-COPY --from=gromacs/gromacs-docker:gmx-2020.2-cuda-10.2-AVX_256  /gromacs /gromacs
-COPY --from=gromacs/gromacs-docker:gmx-2020.2-cuda-10.2-AVX2_256 /gromacs /gromacs
-COPY --from=gromacs/gromacs-docker:gmx-2020.2-cuda-10.2-AVX_512  /gromacs /gromacs
+
+#COPY --from=gromacs/gromacs-docker:gmx-2020.2-cuda-10.2-SSE2     /gromacs /gromacs
+#COPY --from=gromacs/gromacs-docker:gmx-2020.2-cuda-10.2-AVX_256  /gromacs /gromacs
+#COPY --from=gromacs/gromacs-docker:gmx-2020.2-cuda-10.2-AVX2_256 /gromacs /gromacs
+#COPY --from=gromacs/gromacs-docker:gmx-2020.2-cuda-10.2-AVX_512  /gromacs /gromacs
 
 # Add architecture-detection script
 COPY gmx-chooser /gromacs/bin/gmx
 RUN chmod +x /gromacs/bin/gmx
 
+ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
 ENV PATH=$PATH:/gromacs/bin
 
 #

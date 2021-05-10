@@ -9,4 +9,9 @@ elif echo $FLAGS | grep " avx " > /dev/null && test -d /gromacs/bin.AVX_256; the
 else
     ARCH="SSE2"
 fi
-/gromacs/bin.${ARCH}/bin/gmx $@
+
+if [ -f "/gromacs/bin.${ARCH}/gmx_mpi" ]; then
+    /gromacs/bin.${ARCH}/gmx_mpi $@
+else
+    /gromacs/bin.${ARCH}/gmx $@
+fi
