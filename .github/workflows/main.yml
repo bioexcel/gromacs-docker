@@ -213,7 +213,7 @@ jobs:
     
     - name: Build the combined Docker image
       env:
-        docker_tag: ${{env.gromacs}} -cuda-${{env.cuda}}
+        docker_tag: ${{env.gromacs}}
       run: |
         docker build -t "${{env.docker_repo}}:${{env.docker_tag}}" -t "${{env.docker_repo}}:latest" -f Dockerfile .
 
