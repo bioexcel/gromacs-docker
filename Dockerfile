@@ -47,13 +47,14 @@ RUN apt-get update \
     openmpi-bin \
     openmpi-common \
     python \
+  && apt-get dist-upgrade -y \
   && rm -rf /var/lib/apt/lists/*
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib/openmpi/lib
 
 # Download sources
 RUN mkdir -p /gromacs /gromacs-src
 WORKDIR /gromacs-src
-RUN curl -o gromacs.tar.gz http://ftp.gromacs.org/pub/gromacs/gromacs-${GROMACS_VERSION}.tar.gz &&\ 
+RUN curl -L -o gromacs.tar.gz http://ftp.gromacs.org/pub/gromacs/gromacs-${GROMACS_VERSION}.tar.gz &&\ 
     echo "${GROMACS_MD5}  gromacs.tar.gz" > gromacs.tar.gz.md5 &&\
     md5sum -c gromacs.tar.gz.md5 &&\
     tar zxf gromacs.tar.gz &&\
@@ -62,7 +63,7 @@ RUN curl -o gromacs.tar.gz http://ftp.gromacs.org/pub/gromacs/gromacs-${GROMACS_
 # Install fftw with more optimizations than the default packages
 # It is not critical to run the tests here, since our experience is that the
 # Gromacs unit tests will catch fftw build errors too.
-RUN curl -o fftw.tar.gz http://www.fftw.org/fftw-${FFTW_VERSION}.tar.gz \
+RUN curl -L -o fftw.tar.gz http://www.fftw.org/fftw-${FFTW_VERSION}.tar.gz \
   && echo "${FFTW_MD5}  fftw.tar.gz" > fftw.tar.gz.md5 \
   && md5sum -c fftw.tar.gz.md5 \
   && tar -xzvf fftw.tar.gz && cd fftw-${FFTW_VERSION} \
@@ -130,6 +131,7 @@ RUN apt-get update \
     openmpi-bin \
     openmpi-common \
     python \
+  && apt-get dist-upgrade -y \
   && rm -rf /var/lib/apt/lists/*
 
 # copy fftw libraries
