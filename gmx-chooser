@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 FLAGS=`cat /proc/cpuinfo | grep ^flags | head -1`
 if echo $FLAGS | grep " avx512f " > /dev/null && test -d /gromacs/bin.AVX_512 && echo `/gromacs/bin.AVX_512/identifyavx512fmaunits` | grep "2" > /dev/null; then
     ARCH="AVX_512"
@@ -9,4 +9,5 @@ elif echo $FLAGS | grep " avx " > /dev/null && test -d /gromacs/bin.AVX_256; the
 else
     ARCH="SSE2"
 fi
+IFS=
 /gromacs/bin.${ARCH}/gmx $@
