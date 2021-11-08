@@ -106,7 +106,7 @@ To change the SIMD types you need to change the variable "simd_types". This shou
 
 `generate_specifications_file.py` will build all containers needed to create the final docker conatiner.  It is provided from `gromacs-hpccm-recipes-mult-stages`.
 
-Firstly, `generate_specifications_file.py` takes many options. It is first called to generate an FFTW conatiner that is optimised for all the SIMD types in `simd_types`.
+Firstly, `generate_specifications_file.py` takes many options. It is first called to generate an FFTW container that is optimised for all the SIMD types in `simd_types`.
 
 Next, `generate_specifications_file.py` is called in a job matrix to build an optimised version of GROMACS for each SIMD type.  Each of these is then registered to DockerHub with the name `gmx-GROMACS_version-cuda-CUDA_version-SIMD_type`.
 
