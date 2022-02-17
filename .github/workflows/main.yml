@@ -10,7 +10,7 @@ env:
   # Here you can speify the versions of the
   # various parameters, such as gcc or cuda.
   fftw: 3.3.8
-  gromacs: 2021.4
+  gromacs: 2021.5
   cmake: 3.17.1
   gcc: 8
   cuda: 10.1
