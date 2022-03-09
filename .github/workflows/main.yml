@@ -7,7 +7,7 @@ env:
   #                docker containers to.
   docker_repo: gromacs/gromacs
 
-  # Here you can speify the versions of the
+  # Here you can specify the versions of the
   # various parameters, such as gcc or cuda.
   fftw: 3.3.8
   gromacs: 2021.5
