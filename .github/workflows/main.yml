@@ -15,7 +15,7 @@ env:
   gcc: 8
   cuda: 11.6.0
   openmpi: 4.0.0
-  ubuntu: 18.04
+  ubuntu: 20.04
   rdtscp: off
 
   # simd_types:  List of simd instruction set, Multiple option can be
