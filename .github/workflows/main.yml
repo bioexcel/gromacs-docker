@@ -13,7 +13,7 @@ env:
   gromacs: 2021.5
   cmake: 3.17.1
   gcc: 8
-  cuda: 10.1
+  cuda: 11.6.0
   openmpi: 4.0.0
   ubuntu: 20.04
   rdtscp: off
@@ -30,7 +30,7 @@ jobs:
   # Convert additiona_simd_types into a JSON object that can be used as
   # an input to the build matrix in build_sub_containers
   get_builds:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-${{env.ubuntu}}
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
@@ -43,7 +43,7 @@ jobs:
   # Builds the fftw container needed for the final combined container.
   build_fftw_container:
     needs: get_builds
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-${{env.ubuntu}}
     if: "!contains(github.event.head_commit.message, 'ci skip')"
     steps:
     - uses: actions/checkout@v2
@@ -102,7 +102,7 @@ jobs:
     # Fetch JSON created from simd_types
     strategy:
       matrix: ${{fromJson(needs.get_builds.outputs.matrix)}}
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-${{env.ubuntu}}
 
     if: "!contains(github.event.head_commit.message, 'ci skip')"
     steps:
@@ -164,7 +164,7 @@ jobs:
 # publish to docker hub
   build_final_container:
     needs: build_subcontainer
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-${{env.ubuntu}}
     if: "!contains(github.event.head_commit.message, 'ci skip')"
 
     # Only combine and push to Docker Hub if we are on dev branch (TODO: master) and 
@@ -203,7 +203,8 @@ jobs:
     - name: Edit Dockerfile- COPY cuda-ver
       run: |
         FIRST_SIMD=`echo ${{env.simd_types}} | grep -o ^[a-zA-Z0-9]*`
-        sed -i "/# Copy compiled dependencies/a COPY --from=${{env.docker_repo}}:gmx-${{env.gromacs}}-cuda-${{env.cuda}}-$FIRST_SIMD     \/usr\/local\/cuda-${{env.cuda}} \/usr\/local\/cuda-${{env.cuda}}" Dockerfile
+        CUDA_DIR=`echo ${{env.cuda}} | grep -o ^[0-9][0-9]\.[0-9]*`
+        sed -i "/# Copy compiled dependencies/a COPY --from=${{env.docker_repo}}:gmx-${{env.gromacs}}-cuda-${{env.cuda}}-$FIRST_SIMD     \/usr\/local\/cuda-$CUDA_DIR \/usr\/local\/cuda-$CUDA_DIR" Dockerfile
 
 
             
