@@ -43,7 +43,7 @@ RUN chmod +x /gromacs/bin/gmx
 # "docker run --gpu 1" will bind /usr/lib/x86_64-linux-gnu/libcuda.so.1 found by
 # x86_64-linux-gnu.conf, however for non-CUDA execution we'll put this
 # as a fallback to avoid gmx warning messages about missing libcuda.so.1
-RUN echo /usr/local/cuda > /etc/ld.so.conf.d/zz-cuda-compat.conf && \
+RUN echo /usr/local/cuda/compat > /etc/ld.so.conf.d/zz-cuda-compat.conf && \
     ldconfig
 
 # Environment variables
