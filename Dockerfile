@@ -40,7 +40,13 @@ COPY --from=gromacs/gromacs-docker:fftw-3.3.8 /usr/local/lib /usr/local/lib
 COPY gmx-chooser /gromacs/bin/gmx
 RUN chmod +x /gromacs/bin/gmx
 
-ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
+# "docker run --gpu 1" will bind /usr/lib/x86_64-linux-gnu/libcuda.so.1 found by
+# x86_64-linux-gnu.conf, however for non-CUDA execution we'll put this
+# as a fallback to avoid gmx warning messages about missing libcuda.so.1
+RUN echo /usr/local/cuda-*/compat > /etc/ld.so.conf.d/zz-cuda-compat.conf && \
+    ldconfig
+
+# Environment variables
 ENV PATH=$PATH:/gromacs/bin
 
 #
