@@ -33,6 +33,12 @@ The below highlights this using an example of using `pdb2gmx` from the tutorial 
     wget http://www.mdtutorials.com/gmx/membrane_protein/Files/KALP-15_princ.pdb
     docker run -v $HOME/data:/data -w /data -it gromacs/gromacs gmx pdb2gmx -f KALP-15_princ.pdb -o KALP-15_processed.gro -ignh -ter -water spc
 
+If you get a permissions error when trying to run this command it is likely that SELINUX is blocking it and the permissions need to be set by adding `:Z` to the end of the volume bind as so:
+
+    mkdir $HOME/data ; cd $HOME/data
+    wget http://www.mdtutorials.com/gmx/membrane_protein/Files/KALP-15_princ.pdb
+    docker run -v $HOME/data:/data:Z -w /data -it gromacs/gromacs gmx pdb2gmx -f KALP-15_princ.pdb -o KALP-15_processed.gro -ignh -ter -water spc
+
 
 It is beyond the scope of this README file to document GROMACS usage. For further information see:
 
@@ -91,14 +97,20 @@ This will require you to have an account on Dockerhub, and to have setup a PAT t
 
 To change the version of gromacs or CUDA, you just need to change the variables in the workflow file: `.github/workflow/main.yml`
 
-To change the SIMD types requires you to update the build matrix in workflow file and add them to the `additoon_simd_types` in the workflow file.
+At the start of this file there is a list of parameters that can be changed such as GROMACS version, CUDA version and SIMD types.
+
+To change the SIMD types you need to change the variable "simd_types". This should be a space separted list of SIMD types.  This will be used to create the workflow matrix to build each of the SIMD specifc containers.
 
 ### CI Workflow and how the container is built
 
-- `build-all-dockerfiles.sh` calls `build-dockerfiles.py` once for each simd-type specified in the array 'simd_types'.
-- `build-dockerfiles.py` generates a dockerfile based on several variables, such as GROMACS version, CUDA version and SIMD type. This is stored in a directory named `gmx-<gromacs_version>-cuda-<cuda_version>-<simd_type>`.
-- `fftw/Dockerfile` will build an optimised version of lib-fftw in a container.
-- `Dockerfile` will build the single combined container
+
+`generate_specifications_file.py` will build all containers needed to create the final docker conatiner.  It is provided from `gromacs-hpccm-recipes-mult-stages`.
+
+Firstly, `generate_specifications_file.py` takes many options. It is first called to generate an FFTW container that is optimised for all the SIMD types in `simd_types`.
+
+Next, `generate_specifications_file.py` is called in a job matrix to build an optimised version of GROMACS for each SIMD type.  Each of these is then registered to DockerHub with the name `gmx-GROMACS_version-cuda-CUDA_version-SIMD_type`.
+
+Finally, a new Docker container is created which copies the optimised GROMACS versions from the containers built into a single container and publishes this to DockerHub
 
 ## Contact us
 
