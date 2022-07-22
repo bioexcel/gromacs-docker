@@ -54,7 +54,7 @@ If you have an NVIDIA GPU, some GROMACS modules (in particular `mdrun`) can bene
 
 ### Other distributions
 
-A pre-compiled GROMACS distribution using OpenCL acceleration is available from [BioConda](https://anaconda.org/bioconda/gromacs).
+A pre-compiled latest GROMACS distribution optionally using CUDA or OpenCL acceleration is available from [conda-forge](https://anaconda.org/conda-forge/gromacs). Older versions of GROMACS using (only) OpenCL acceleration are available from [BioConda](https://anaconda.org/bioconda/gromacs).
 
 The corresponding [BioContainers](https://quay.io/repository/biocontainers/gromacs?tab=tags) Docker image can be used instead of this image, but that will not be able to provide GPU acceleration without additional binding of OpenCL folders.
 
