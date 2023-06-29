@@ -5,7 +5,7 @@ env:
   # docker_repo:   This must be changed between forks.  This should be the
   #                dockerhub repository you will be using to register the
   #                docker containers to.
-  docker_repo: gromacs/gromacs
+  docker_repo: kingsleyobiedeh/gromacs
   
   
   # Here you can specify the versions of the
@@ -17,7 +17,7 @@ env:
   cuda: 11.6.0
   openmpi: 4.0.0
   ubuntu: 20.04
-  rdtscp: off
+  rdtscp: on
 
   # simd_types:  List of simd instruction set, Multiple option can be
   #              chosen separated by space.
